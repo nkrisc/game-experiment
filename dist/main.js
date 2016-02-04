@@ -738,13 +738,7 @@
 	var CURSOR_POS = { x: 0, y: 0 };
 
 	var keyState = {
-	    arrows: {
-	        current: null,
-	        downArrow: false,
-	        rightArrow: false,
-	        upArrow: false,
-	        leftArrow: false
-	    },
+	    arrows: [],
 	    ctrl: false,
 	    shift: false,
 	    alt: false,
@@ -823,24 +817,13 @@
 
 	function inputKeyDown(e) {
 	    e.preventDefault();
-	    keyState.arrows.current = e.keyCode;
+
+	    if (keyState.arrows.indexOf(e.keyCode) === -1 && (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37)) {
+	        keyState.arrows.push(e.keyCode);
+	        console.log(keyState.arrows);
+	    }
+
 	    switch (e.keyCode) {
-	        case 40:
-	            //keyState.arrows.downArrow = true;
-	            //makeKeysFalseExcept('downArrow');
-	            return;
-	        case 39:
-	            //keyState.arrows.rightArrow = true;
-	            //makeKeysFalseExcept('rightArrow');
-	            return;
-	        case 38:
-	            //keyState.arrows.upArrow = true;
-	            //makeKeysFalseExcept('upArrow');
-	            return;
-	        case 37:
-	            //keyState.arrows.leftArrow = true;
-	            //makeKeysFalseExcept('leftArrow');
-	            return;
 	        case 74:
 	            keyState.j = true;
 	            return;
@@ -851,19 +834,13 @@
 
 	function inputKeyUp(e) {
 	    e.preventDefault();
+
+	    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+	        keyState.arrows.splice(keyState.arrows.indexOf(e.keyCode), 1);
+	        console.log(keyState.arrows);
+	    }
+
 	    switch (e.keyCode) {
-	        case 40:
-	            keyState.downArrow = false;
-	            break;
-	        case 39:
-	            keyState.rightArrow = false;
-	            break;
-	        case 38:
-	            keyState.upArrow = false;
-	            break;
-	        case 37:
-	            keyState.leftArrow = false;
-	            break;
 	        case 74:
 	            keyState.j = false;
 	            break;
@@ -1037,7 +1014,7 @@
 	    function updatePlayerBehavior() {
 	        playerAction = false;
 	        var player = (0, _player.getPlayer)();
-	        switch (_input.keyState.arrows.current) {
+	        switch (_input.keyState.arrows[_input.keyState.arrows.length - 1]) {
 	            case 40:
 	                player.moveDown();
 	                playerAction = true;

@@ -43,7 +43,7 @@ function update() {
     function updatePlayerBehavior() {
         playerAction = false;
         var player = getPlayer();
-        switch (keyState.arrows.current) {
+        switch (keyState.arrows[keyState.arrows.length -1]) {
             case 40:
                 player.moveDown();
                 playerAction = true;
