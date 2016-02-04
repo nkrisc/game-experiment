@@ -736,11 +736,15 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var CURSOR_POS = { x: 0, y: 0 };
+
 	var keyState = {
-	    downArrow: false,
-	    rightArrow: false,
-	    upArrow: false,
-	    leftArrow: false,
+	    arrows: {
+	        current: null,
+	        downArrow: false,
+	        rightArrow: false,
+	        upArrow: false,
+	        leftArrow: false
+	    },
 	    ctrl: false,
 	    shift: false,
 	    alt: false,
@@ -810,19 +814,32 @@
 	        }
 	}
 
+	function makeKeysFalseExcept(thisone) {
+	    for (var k in keyState.arrows) {
+	        console.log(k, keyState.arrows[k]);
+	        if (k !== thisone) keyState.arrows[k] = false;
+	    }
+	}
+
 	function inputKeyDown(e) {
+	    e.preventDefault();
+	    keyState.arrows.current = e.keyCode;
 	    switch (e.keyCode) {
 	        case 40:
-	            keyState.downArrow = true;
+	            //keyState.arrows.downArrow = true;
+	            //makeKeysFalseExcept('downArrow');
 	            return;
 	        case 39:
-	            keyState.rightArrow = true;
+	            //keyState.arrows.rightArrow = true;
+	            //makeKeysFalseExcept('rightArrow');
 	            return;
 	        case 38:
-	            keyState.upArrow = true;
+	            //keyState.arrows.upArrow = true;
+	            //makeKeysFalseExcept('upArrow');
 	            return;
 	        case 37:
-	            keyState.leftArrow = true;
+	            //keyState.arrows.leftArrow = true;
+	            //makeKeysFalseExcept('leftArrow');
 	            return;
 	        case 74:
 	            keyState.j = true;
@@ -833,24 +850,29 @@
 	}
 
 	function inputKeyUp(e) {
+	    e.preventDefault();
 	    switch (e.keyCode) {
 	        case 40:
 	            keyState.downArrow = false;
-	            return;
+	            break;
 	        case 39:
 	            keyState.rightArrow = false;
-	            return;
+	            break;
 	        case 38:
 	            keyState.upArrow = false;
-	            return;
+	            break;
 	        case 37:
 	            keyState.leftArrow = false;
-	            return;
+	            break;
 	        case 74:
 	            keyState.j = false;
-	            return;
+	            break;
 	        case 75:
 	            keyState.k = false;
+	            break;
+	    }
+	    if (keyState.arrows.downArrow === false && keyState.arrows.rightArrow === false && keyState.arrows.upArrow === false && keyState.arrows.leftArrow === false) {
+	        keyState.arrows.current = null;
 	    }
 	}
 
@@ -880,7 +902,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.uiElements = exports.ctx = exports.canvas = exports.getCanvas = undefined;
+	exports.ctx = exports.canvas = exports.getCanvas = undefined;
 
 	var _constants = __webpack_require__(3);
 
@@ -901,13 +923,6 @@
 	        mousex = document.getElementById('mousex'),
 	        mousey = document.getElementById('mousey'),
 	        fps = document.getElementById('fps');
-
-	    var uiElements = {
-	        tile: tile,
-	        mousex: mousex,
-	        mousey: mousey,
-	        fps: fps
-	    };
 	});
 
 	function getCanvas(id) {
@@ -920,7 +935,6 @@
 	exports.getCanvas = getCanvas;
 	exports.canvas = canvas;
 	exports.ctx = ctx;
-	exports.uiElements = uiElements;
 
 /***/ },
 /* 9 */
@@ -1017,28 +1031,60 @@
 	        }
 	    }
 
-	    //if(current)console.log(current.event, current.entity, Date.now() /1000)
-
 	    //Process player movement event
+	    //If there's a player action allow updates to advance one step
+	    var playerAction;
 	    function updatePlayerBehavior() {
+	        playerAction = false;
 	        var player = (0, _player.getPlayer)();
-	        if (_input.keyState.downArrow) player.moveDown();
-	        if (_input.keyState.rightArrow) player.moveRight();
-	        if (_input.keyState.upArrow) player.moveUp();
-	        if (_input.keyState.leftArrow) player.moveLeft();
-	        if (_input.keyState.j) _action.Action.shoot(player, player.dir);
+	        switch (_input.keyState.arrows.current) {
+	            case 40:
+	                player.moveDown();
+	                playerAction = true;
+	                break;
+	            case 39:
+	                player.moveRight();
+	                playerAction = true;
+	                break;
+	            case 38:
+	                player.moveUp();
+	                playerAction = true;
+	                break;
+	            case 37:
+	                player.moveLeft();
+	                playerAction = true;
+	                break;
+	        }
+	        /*
+	        if (keyState.downArrow) {
+	            player.moveDown();
+	            playerAction = true;
+	        }
+	        if (keyState.rightArrow) {
+	            player.moveRight();
+	            playerAction = true;
+	        }
+	        if (keyState.upArrow) {
+	            player.moveUp();
+	            playerAction = true;
+	        }
+	        if (keyState.leftArrow) {
+	            player.moveLeft();
+	            playerAction = true;
+	        }
+	        */
+	        if (_input.keyState.j) {
+	            _action.Action.shoot(player, player.dir);
+	            playerAction = true;
+	        }
 	    }
 
-	    function updateUI() {
-	        var cursor = (0, _input.getCursorPos)();
-	        _UI.uiElements.mousex.textContent = cursor.x;
-	        _UI.uiElements.mousey.textContent = cursor.y;
-	    }
-
-	    updateEntities();
-	    prune();
 	    updatePlayerBehavior();
-	    updateUI();
+	    if (playerAction === true) {
+	        updateEntities();
+	        prune();
+	        playerAction === false;
+	    }
 	}
 
 	exports.update = update;

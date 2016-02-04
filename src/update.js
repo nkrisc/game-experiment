@@ -37,22 +37,60 @@ function update() {
         }
     }
 
-    //if(current)console.log(current.event, current.entity, Date.now() /1000)
-
     //Process player movement event
+    //If there's a player action allow updates to advance one step
+    var playerAction;
     function updatePlayerBehavior() {
+        playerAction = false;
         var player = getPlayer();
-        if (keyState.downArrow) player.moveDown();
-        if (keyState.rightArrow) player.moveRight();
-        if (keyState.upArrow) player.moveUp();
-        if (keyState.leftArrow) player.moveLeft();
-        if (keyState.j) Action.shoot(player, player.dir);
+        switch (keyState.arrows.current) {
+            case 40:
+                player.moveDown();
+                playerAction = true;
+                break;
+            case 39:
+                player.moveRight();
+                playerAction = true;
+                break;
+            case 38:
+                player.moveUp();
+                playerAction = true;
+                break;
+            case 37:
+                player.moveLeft();
+                playerAction = true;
+                break;
+        }
+        /*
+        if (keyState.downArrow) {
+            player.moveDown();
+            playerAction = true;
+        }
+        if (keyState.rightArrow) {
+            player.moveRight();
+            playerAction = true;
+        }
+        if (keyState.upArrow) {
+            player.moveUp();
+            playerAction = true;
+        }
+        if (keyState.leftArrow) {
+            player.moveLeft();
+            playerAction = true;
+        }
+        */
+        if (keyState.j) {
+            Action.shoot(player, player.dir);
+            playerAction = true;
+        }
     }
 
-
-    updateEntities();
-    prune();
     updatePlayerBehavior();
+    if (playerAction === true) {
+        updateEntities();
+        prune();
+        playerAction === false;
+    }
 }
 
 export { update, QUEUE }

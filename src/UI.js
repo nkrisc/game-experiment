@@ -13,12 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mousey = document.getElementById('mousey'),
         fps = document.getElementById('fps');
 
-    var uiElements = {
-        tile,
-        mousex,
-        mousey,
-        fps
-    }
 });
 
 function getCanvas(id) {

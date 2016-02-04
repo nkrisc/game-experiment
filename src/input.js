@@ -7,11 +7,15 @@ import { Tile, Decor } from './terrain.js';
 import { getPlayer } from './player.js';
 
 const CURSOR_POS =  { x: 0, y: 0 };
+
 const keyState = {
-    downArrow: false,
-    rightArrow: false,
-    upArrow: false,
-    leftArrow: false,
+    arrows: {
+        current: null,
+        downArrow: false,
+        rightArrow: false,
+        upArrow: false,
+        leftArrow: false
+    },
     ctrl: false,
     shift: false,
     alt: false,
@@ -81,19 +85,32 @@ function inputKeys(e) {
     }
 }
 
+function makeKeysFalseExcept(thisone) {
+    for (var k in keyState.arrows) {
+        console.log(k, keyState.arrows[k]);
+        if (k !== thisone) keyState.arrows[k] = false;
+    }
+}
+
 function inputKeyDown(e) {
+    e.preventDefault();
+    keyState.arrows.current = e.keyCode;
     switch (e.keyCode) {
         case 40:
-            keyState.downArrow = true;
+            //keyState.arrows.downArrow = true;
+            //makeKeysFalseExcept('downArrow');
             return;
         case 39:
-            keyState.rightArrow = true;
+            //keyState.arrows.rightArrow = true;
+            //makeKeysFalseExcept('rightArrow');
             return;
         case 38:
-            keyState.upArrow = true;
+            //keyState.arrows.upArrow = true;
+            //makeKeysFalseExcept('upArrow');
             return;
         case 37:
-            keyState.leftArrow = true;
+            //keyState.arrows.leftArrow = true;
+            //makeKeysFalseExcept('leftArrow');
             return;
         case 74:
             keyState.j = true;
@@ -103,23 +120,33 @@ function inputKeyDown(e) {
 }
 
 function inputKeyUp(e) {
+    e.preventDefault();
     switch (e.keyCode) {
         case 40:
             keyState.downArrow = false;
-            return;
+            break;
         case 39:
             keyState.rightArrow = false;
-            return;
+            break;
         case 38:
             keyState.upArrow = false;
-            return;
+            break;
         case 37:
             keyState.leftArrow = false;
-            return;
+            break;
         case 74:
             keyState.j = false;
-            return;
-        case 75: keyState.k = false;
+            break;
+        case 75:
+            keyState.k = false;
+            break;
+    }
+    if (keyState.arrows.downArrow === false &&
+        keyState.arrows.rightArrow === false &&
+        keyState.arrows.upArrow === false &&
+        keyState.arrows.leftArrow === false
+    ) {
+        keyState.arrows.current = null;
     }
 }
 
