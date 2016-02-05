@@ -6,6 +6,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants.js';
 import { ObjectList } from './objectlist.js';
 import { GameObject } from './gameobject.js';
 import { Tile } from './terrain.js';
+//TODO combine offscreen and legal move checks into one game area module
 
 const ENTITIES = new ObjectList();
 

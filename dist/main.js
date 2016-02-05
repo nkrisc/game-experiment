@@ -790,24 +790,6 @@
 	    }
 	}
 
-	function inputKeys(e) {
-	    e.preventDefault();
-	    var player = (0, _player.getPlayer)();
-	    if (e.keyCode === 40) {
-	        _update.QUEUE.push(new GameEvent(player, 'move', 'down'));
-	    } else if (e.keyCode === 39) {
-	        _update.QUEUE.push(new GameEvent(player, 'move', 'right'));
-	    } else if (e.keyCode === 38) {
-	        _update.QUEUE.push(new GameEvent(player, 'move', 'up'));
-	    } else if (e.keyCode === 37) {
-	        _update.QUEUE.push(new GameEvent(player, 'move', 'left'));
-	    } else if (e.keyCode === 74) {
-	        if (player.wait >= player.rest) _update.QUEUE.push(new GameEvent(_action.Action.shoot(player, player.dir), 'action', null)); //hardcoded to player
-	    } else if (e.keyCode === 75) {
-	            if (player.wait >= player.rest) _update.QUEUE.push(new GameEvent(_action.Action.shootArrow(player, player.dir), 'action', null));
-	        }
-	}
-
 	function makeKeysFalseExcept(thisone) {
 	    for (var k in keyState.arrows) {
 	        console.log(k, keyState.arrows[k]);
@@ -1010,58 +992,30 @@
 
 	    //Process player movement event
 	    //If there's a player action allow updates to advance one step
-	    var playerAction;
 	    function updatePlayerBehavior() {
-	        playerAction = false;
 	        var player = (0, _player.getPlayer)();
 	        switch (_input.keyState.arrows[_input.keyState.arrows.length - 1]) {
 	            case 40:
 	                player.moveDown();
-	                playerAction = true;
 	                break;
 	            case 39:
 	                player.moveRight();
-	                playerAction = true;
 	                break;
 	            case 38:
 	                player.moveUp();
-	                playerAction = true;
 	                break;
 	            case 37:
 	                player.moveLeft();
-	                playerAction = true;
 	                break;
 	        }
-	        /*
-	        if (keyState.downArrow) {
-	            player.moveDown();
-	            playerAction = true;
-	        }
-	        if (keyState.rightArrow) {
-	            player.moveRight();
-	            playerAction = true;
-	        }
-	        if (keyState.upArrow) {
-	            player.moveUp();
-	            playerAction = true;
-	        }
-	        if (keyState.leftArrow) {
-	            player.moveLeft();
-	            playerAction = true;
-	        }
-	        */
 	        if (_input.keyState.j) {
 	            _action.Action.shoot(player, player.dir);
-	            playerAction = true;
 	        }
 	    }
 
 	    updatePlayerBehavior();
-	    if (playerAction === true) {
-	        updateEntities();
-	        prune();
-	        playerAction === false;
-	    }
+	    updateEntities();
+	    prune();
 	}
 
 	exports.update = update;

@@ -11,7 +11,6 @@ class Action {
                 hit.destroy();
                 self.destroy();
             }
-            //TODO: in future entity hit checking, check against owner so no self hit
             if (self.isOffScreen()) {
                 self.destroy();
             }  else if (self.dir === 0) {
