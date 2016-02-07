@@ -28,15 +28,17 @@ const CURSOR_STATE = {
         y: 0
     }
 
-}
+};
 
+/* Queue deprecated for time being, no current need for GameEvent
 class GameEvent {
-    constructor(etity, event, value) {
+    constructor(entity, event, value) {
         this.entity = entity;
         this.event = event;
         this.value = value;
     }
 }
+*/
 
 function mouseDown(e) {
     switch(e.button) {
@@ -78,9 +80,11 @@ function mouseToGrid(e) {
     return {x: x, y: y}
 }
 
+/* Replaced for time being
+TODO: move functions to new event handler, combine event handlers
 function canvasClick(e){
     e.preventDefault();
-    var m = mouseToGrid(e);
+    var m = CURSOR_STATE;
     if (e.button === 0 && e.shiftKey === false && e.ctrlKey === false && e.altKey === false) {
         new Tile(m.x, m.y, 'obstacle');
     } else if (e.button === 0 && e.shiftKey === true) {
@@ -93,6 +97,7 @@ function canvasClick(e){
         addRandomMonster();
     }
 }
+*/
 
 function inputKeyDown(e) {
     e.preventDefault();
@@ -168,7 +173,7 @@ function onDrag() {
             CURSOR_STATE.y !== CURSOR_STATE.dragStartY)) {
         CURSOR_STATE.drag = true;
     }
-    if (CURSOR_STATE.drag === true) {
+    if (CURSOR_STATE.drag) {
         var da = CURSOR_STATE.dragArea;
         var dir = getDragDirection(),
             sx = CURSOR_STATE.dragStartX,
@@ -211,14 +216,29 @@ function onDrag() {
 }
 
 function onDragRelease(e) {
-    CURSOR_STATE.drag = false;
+    if (e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+        if (CURSOR_STATE.drag) {
+            CURSOR_STATE.drag = false;
+            var da = CURSOR_STATE.dragArea;
+            console.log(da.x, da.width, da.y, da.height);
+            for (var x = 0; x < da.width / 10; x++) {
+                for (var y = 0; y < da.height / 10; y++) {
+                    var tx = x * 10 + da.x;
+                    var ty = y * 10 + da.y;
+                    new Tile(tx, ty, 'obstacle');
+                }
+            }
+        } else {
+            new Tile(CURSOR_STATE.x, CURSOR_STATE.y, 'obstacle');
+        }
+    }
 }
 
 window.addEventListener('DOMContentLoaded', function() {
     canvas.oncontextmenu = function () {
         return false
     };
-    canvas.addEventListener('mousedown', canvasClick);
+    //canvas.addEventListener('mousedown', canvasClick);
 
     window.addEventListener('mousedown', mouseDown);
     canvas.addEventListener('mousedown', onDragStart);

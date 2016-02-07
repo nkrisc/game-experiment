@@ -813,7 +813,7 @@
 
 	function canvasClick(e) {
 	    e.preventDefault();
-	    var m = mouseToGrid(e);
+	    var m = CURSOR_STATE;
 	    if (e.button === 0 && e.shiftKey === false && e.ctrlKey === false && e.altKey === false) {
 	        new _terrain.Tile(m.x, m.y, 'obstacle');
 	    } else if (e.button === 0 && e.shiftKey === true) {
@@ -923,7 +923,6 @@
 	                da.width = 10;
 	                da.x = sx;
 	                da.y = cy;
-	                console.log(cy);
 	                break;
 	            case 2:
 	                // positive X
@@ -945,13 +944,22 @@
 
 	function onDragRelease(e) {
 	    CURSOR_STATE.drag = false;
+	    var da = CURSOR_STATE.dragArea;
+	    console.log(da.x, da.width, da.y, da.height);
+	    for (var x = 0; x < da.width / 10; x++) {
+	        for (var y = 0; y < da.height / 10; y++) {
+	            var tx = x * 10 + da.x;
+	            var ty = y * 10 + da.y;
+	            new _terrain.Tile(tx, ty, 'obstacle');
+	        }
+	    }
 	}
 
 	window.addEventListener('DOMContentLoaded', function () {
 	    _UI.canvas.oncontextmenu = function () {
 	        return false;
 	    };
-	    _UI.canvas.addEventListener('mousedown', canvasClick);
+	    //canvas.addEventListener('mousedown', canvasClick);
 
 	    window.addEventListener('mousedown', mouseDown);
 	    _UI.canvas.addEventListener('mousedown', onDragStart);
