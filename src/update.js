@@ -2,6 +2,7 @@ import { Entity } from './entity.js';
 import { getPlayer } from './player.js';
 import { KEY_STATE, getCursorPos } from './input.js';
 import { Action } from './action.js';
+import { SCENE, offsetX, offsetY } from './scene.js';
 
 const QUEUE = [];
 
@@ -37,22 +38,25 @@ function update() {
         }
     }
 
-    //Process player movement event
-    //If there's a player action allow updates to advance one step
     function updatePlayerBehavior() {
         var player = getPlayer();
         switch (Array.from(KEY_STATE.arrows.values()).pop()) {
             case 40:
-                player.moveDown();
+                //If play can move (it will) and player is within 50 of view bottom and view isn't at scene edge
+                if (player.moveDown() && player.y >= SCENE.VIEW.bottom() - 50 && SCENE.bottom() !== SCENE.VIEW.bottom()) {
+                    console.log('SCENE', SCENE.top(), SCENE.right(), SCENE.bottom(), SCENE.left());
+                    console.log('VIEW', SCENE.VIEW.top(), SCENE.VIEW.right(), SCENE.VIEW.bottom(), SCENE.VIEW.left());
+                    offsetY(-10);
+                }
                 break;
             case 39:
-                player.moveRight();
+                if (player.moveRight() && player.x >= SCENE.VIEW.right() - 50 && SCENE.right() !== SCENE.VIEW.right()) offsetX(-10);
                 break;
             case 38:
-                player.moveUp();
+                if (player.moveUp() && player.y <= SCENE.VIEW.top() + 50 && SCENE.top() !== SCENE.VIEW.top()) offsetY(10);
                 break;
             case 37:
-                player.moveLeft();
+                if (player.moveLeft() && player.x <= SCENE.VIEW.left() + 50 && SCENE.left() !== SCENE.VIEW.left()) offsetX(10);
                 break;
         }
         if (KEY_STATE.j) {

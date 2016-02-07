@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants.js';
+import { SCENE } from './scene.js';
 
 class GameObject {
     constructor(x, y, type, update) {
@@ -8,7 +8,7 @@ class GameObject {
         this.update = update;
         this.uuid = GameObject.generateUUID();
         this.isOffScreen = function() {
-            return !!(this.x > CANVAS_WIDTH || this.x < 0 || this.y > CANVAS_HEIGHT || this.y < 0);
+            return !!(this.x > SCENE.width || this.x < 0 || this.y > SCENE.height || this.y < 0);
         };
     }
 
@@ -20,7 +20,7 @@ class GameObject {
     }
 
     static isInBounds(x, y) {
-        return ((x >= 0 && x < CANVAS_WIDTH) && (y >= 0 && y < CANVAS_HEIGHT));
+        return ((x >= 0 && x < SCENE.width) && (y >= 0 && y < SCENE.height));
     }
 }
 
