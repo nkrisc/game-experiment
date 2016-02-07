@@ -389,6 +389,8 @@
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by Nathan on 1/31/2016.
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 
+	//TODO combine offscreen and legal move checks into one game area module
+
 	var ENTITIES = new _objectlist.ObjectList();
 
 	var Entity = function (_GameObject) {
@@ -738,7 +740,7 @@
 	var CURSOR_POS = { x: 0, y: 0 };
 
 	var keyState = {
-	    arrows: [],
+	    arrows: new Set(),
 	    ctrl: false,
 	    shift: false,
 	    alt: false,
@@ -800,9 +802,8 @@
 	function inputKeyDown(e) {
 	    e.preventDefault();
 
-	    if (keyState.arrows.indexOf(e.keyCode) === -1 && (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37)) {
-	        keyState.arrows.push(e.keyCode);
-	        console.log(keyState.arrows);
+	    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+	        keyState.arrows.add(e.keyCode);
 	    }
 
 	    switch (e.keyCode) {
@@ -817,10 +818,7 @@
 	function inputKeyUp(e) {
 	    e.preventDefault();
 
-	    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
-	        keyState.arrows.splice(keyState.arrows.indexOf(e.keyCode), 1);
-	        console.log(keyState.arrows);
-	    }
+	    keyState.arrows.delete(e.keyCode);
 
 	    switch (e.keyCode) {
 	        case 74:
@@ -829,9 +827,6 @@
 	        case 75:
 	            keyState.k = false;
 	            break;
-	    }
-	    if (keyState.arrows.downArrow === false && keyState.arrows.rightArrow === false && keyState.arrows.upArrow === false && keyState.arrows.leftArrow === false) {
-	        keyState.arrows.current = null;
 	    }
 	}
 
@@ -914,8 +909,6 @@
 
 	var _action = __webpack_require__(11);
 
-	var _UI = __webpack_require__(8);
-
 	var QUEUE = [];
 
 	function update() {
@@ -923,7 +916,8 @@
 	    /*
 	    time = Date.now() / 1000;
 	    if(time - lastTime > 1 ) {
-	        f.textContent = (turn / (time - lastTime)).toFixed(0);
+	        var fps = (turn / (time - lastTime)).toFixed(0);
+	        UI.fps(fps); //implement
 	        lastTime = time;
 	        turn = 0;
 	    }
@@ -994,7 +988,7 @@
 	    //If there's a player action allow updates to advance one step
 	    function updatePlayerBehavior() {
 	        var player = (0, _player.getPlayer)();
-	        switch (_input.keyState.arrows[_input.keyState.arrows.length - 1]) {
+	        switch (Array.from(_input.keyState.arrows.values()).pop()) {
 	            case 40:
 	                player.moveDown();
 	                break;
@@ -1083,7 +1077,6 @@
 	                    hit.destroy();
 	                    self.destroy();
 	                }
-	                //TODO: in future entity hit checking, check against owner so no self hit
 	                if (self.isOffScreen()) {
 	                    self.destroy();
 	                } else if (self.dir === 0) {

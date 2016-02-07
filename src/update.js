@@ -41,7 +41,7 @@ function update() {
     //If there's a player action allow updates to advance one step
     function updatePlayerBehavior() {
         var player = getPlayer();
-        switch (keyState.arrows[keyState.arrows.length -1]) {
+        switch (Array.from(keyState.arrows.values()).pop()) {
             case 40:
                 player.moveDown();
                 break;

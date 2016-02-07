@@ -9,7 +9,7 @@ import { getPlayer } from './player.js';
 const CURSOR_POS =  { x: 0, y: 0 };
 
 const keyState = {
-    arrows: [],
+    arrows: new Set(),
     ctrl: false,
     shift: false,
     alt: false,
@@ -71,9 +71,8 @@ function makeKeysFalseExcept(thisone) {
 function inputKeyDown(e) {
     e.preventDefault();
 
-    if (keyState.arrows.indexOf(e.keyCode) === -1 && (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37)) {
-        keyState.arrows.push(e.keyCode)
-        console.log(keyState.arrows);
+    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+        keyState.arrows.add(e.keyCode);
     }
 
     switch (e.keyCode) {
@@ -87,10 +86,7 @@ function inputKeyDown(e) {
 function inputKeyUp(e) {
     e.preventDefault();
 
-    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
-        keyState.arrows.splice(keyState.arrows.indexOf(e.keyCode),1);
-        console.log(keyState.arrows);
-    }
+    keyState.arrows.delete(e.keyCode);
 
     switch (e.keyCode) {
         case 74:
@@ -99,13 +95,6 @@ function inputKeyUp(e) {
         case 75:
             keyState.k = false;
             break;
-    }
-    if (keyState.arrows.downArrow === false &&
-        keyState.arrows.rightArrow === false &&
-        keyState.arrows.upArrow === false &&
-        keyState.arrows.leftArrow === false
-    ) {
-        keyState.arrows.current = null;
     }
 }
 
