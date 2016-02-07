@@ -140,7 +140,7 @@
 	        _this2.destroy = function () {
 	            TILES.remove(this.uuid);
 	        };
-	        TILES.add(_this2);
+	        if (!TILES.find(x, y)) TILES.add(_this2);
 	        return _this2;
 	    }
 
@@ -735,8 +735,6 @@
 
 	var _terrain = __webpack_require__(1);
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 	var KEY_STATE = {
 	    arrows: new Set(),
 	    ctrl: false,
@@ -763,13 +761,15 @@
 
 	};
 
-	var GameEvent = function GameEvent(etity, event, value) {
-	    _classCallCheck(this, GameEvent);
-
-	    this.entity = entity;
-	    this.event = event;
-	    this.value = value;
-	};
+	/* Queue deprecated for time being, no current need for GameEvent
+	class GameEvent {
+	    constructor(entity, event, value) {
+	        this.entity = entity;
+	        this.event = event;
+	        this.value = value;
+	    }
+	}
+	*/
 
 	function mouseDown(e) {
 	    switch (e.button) {
@@ -811,21 +811,24 @@
 	    return { x: x, y: y };
 	}
 
-	function canvasClick(e) {
+	/* Replaced for time being
+	TODO: move functions to new event handler, combine event handlers
+	function canvasClick(e){
 	    e.preventDefault();
 	    var m = CURSOR_STATE;
 	    if (e.button === 0 && e.shiftKey === false && e.ctrlKey === false && e.altKey === false) {
-	        new _terrain.Tile(m.x, m.y, 'obstacle');
+	        new Tile(m.x, m.y, 'obstacle');
 	    } else if (e.button === 0 && e.shiftKey === true) {
-	        new _terrain.Tile(m.x, m.y, 'door');
+	        new Tile(m.x, m.y, 'door');
 	    } else if (e.button === 2 && e.ctrlKey === false) {
-	        _terrain.Tile.find(m.x, m.y).destroy();
-	    } else if (e.button === 0 && e.altKey === true) {
-	        new _terrain.Decor(m.x, m.y, 'floor');
+	        Tile.find(m.x, m.y).destroy();
+	    }  else if (e.button === 0 && e.altKey === true) {
+	        new Decor(m.x, m.y, 'floor');
 	    } else if (e.button === 2 && e.ctrlKey === true) {
-	        (0, _units.addRandomMonster)();
+	        addRandomMonster();
 	    }
 	}
+	*/
 
 	function inputKeyDown(e) {
 	    e.preventDefault();
@@ -900,7 +903,7 @@
 	    if (CURSOR_STATE.leftButtonDown === true && (CURSOR_STATE.x !== CURSOR_STATE.dragStartX || CURSOR_STATE.y !== CURSOR_STATE.dragStartY)) {
 	        CURSOR_STATE.drag = true;
 	    }
-	    if (CURSOR_STATE.drag === true) {
+	    if (CURSOR_STATE.drag) {
 	        var da = CURSOR_STATE.dragArea;
 	        var dir = getDragDirection(),
 	            sx = CURSOR_STATE.dragStartX,
@@ -943,14 +946,20 @@
 	}
 
 	function onDragRelease(e) {
-	    CURSOR_STATE.drag = false;
-	    var da = CURSOR_STATE.dragArea;
-	    console.log(da.x, da.width, da.y, da.height);
-	    for (var x = 0; x < da.width / 10; x++) {
-	        for (var y = 0; y < da.height / 10; y++) {
-	            var tx = x * 10 + da.x;
-	            var ty = y * 10 + da.y;
-	            new _terrain.Tile(tx, ty, 'obstacle');
+	    if (e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+	        if (CURSOR_STATE.drag) {
+	            CURSOR_STATE.drag = false;
+	            var da = CURSOR_STATE.dragArea;
+	            console.log(da.x, da.width, da.y, da.height);
+	            for (var x = 0; x < da.width / 10; x++) {
+	                for (var y = 0; y < da.height / 10; y++) {
+	                    var tx = x * 10 + da.x;
+	                    var ty = y * 10 + da.y;
+	                    new _terrain.Tile(tx, ty, 'obstacle');
+	                }
+	            }
+	        } else {
+	            new _terrain.Tile(CURSOR_STATE.x, CURSOR_STATE.y, 'obstacle');
 	        }
 	    }
 	}

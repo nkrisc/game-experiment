@@ -18,7 +18,7 @@ class Tile extends Terrain {
         this.destroy = function() {
             TILES.remove(this.uuid);
         };
-        TILES.add(this);
+        if (!TILES.find(x, y)) TILES.add(this);
     }
 
     static find(x, y) {
