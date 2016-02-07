@@ -4,7 +4,7 @@
 import * as constants from './constants.js';
 import { Tile, Decor } from './terrain.js';
 import { Entity } from './entity.js';
-import { getCursorPos } from './input.js';
+import { CURSOR_STATE } from './input.js';
 import { ctx } from './UI.js';
 
 //IMAGES
@@ -122,17 +122,21 @@ function draw() {
         }
     }
 
-    function drawCursor(cursorPos) {
-        if (cursorPos.x && cursorPos.y) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.strokeRect(cursorPos.x, cursorPos.y, 10, 10)
+    function drawCursor() {
+        ctx.strokeStyle = '#ffffff';
+
+        if (CURSOR_STATE.drag === false) {
+            ctx.strokeRect(CURSOR_STATE.x, CURSOR_STATE.y, 10, 10)
+        } else {
+            var da = CURSOR_STATE.dragArea;
+            ctx.strokeRect(da.x, da.y, da.width, da.height)
         }
     }
 
     drawDecor();
     drawTiles();
     drawEntities();
-    drawCursor(getCursorPos());
+    drawCursor();
 
 
 }

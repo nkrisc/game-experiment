@@ -1,6 +1,6 @@
 import { Entity } from './entity.js';
 import { getPlayer } from './player.js';
-import { keyState, getCursorPos } from './input.js';
+import { KEY_STATE, getCursorPos } from './input.js';
 import { Action } from './action.js';
 
 const QUEUE = [];
@@ -41,7 +41,7 @@ function update() {
     //If there's a player action allow updates to advance one step
     function updatePlayerBehavior() {
         var player = getPlayer();
-        switch (Array.from(keyState.arrows.values()).pop()) {
+        switch (Array.from(KEY_STATE.arrows.values()).pop()) {
             case 40:
                 player.moveDown();
                 break;
@@ -55,7 +55,7 @@ function update() {
                 player.moveLeft();
                 break;
         }
-        if (keyState.j) {
+        if (KEY_STATE.j) {
             Action.shoot(player, player.dir);
         }
     }

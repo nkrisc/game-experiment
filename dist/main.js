@@ -54,7 +54,7 @@
 
 	var _draw = __webpack_require__(6);
 
-	var _update = __webpack_require__(9);
+	var _update = __webpack_require__(11);
 
 	var _constants = __webpack_require__(3);
 
@@ -64,7 +64,7 @@
 
 	var handler = _interopRequireWildcard(_input);
 
-	__webpack_require__(12);
+	__webpack_require__(9);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -695,17 +695,21 @@
 	        }
 	    }
 
-	    function drawCursor(cursorPos) {
-	        if (cursorPos.x && cursorPos.y) {
-	            _UI.ctx.strokeStyle = '#ffffff';
-	            _UI.ctx.strokeRect(cursorPos.x, cursorPos.y, 10, 10);
+	    function drawCursor() {
+	        _UI.ctx.strokeStyle = '#ffffff';
+
+	        if (_input.CURSOR_STATE.drag === false) {
+	            _UI.ctx.strokeRect(_input.CURSOR_STATE.x, _input.CURSOR_STATE.y, 10, 10);
+	        } else {
+	            var da = _input.CURSOR_STATE.dragArea;
+	            _UI.ctx.strokeRect(da.x, da.y, da.width, da.height);
 	        }
 	    }
 
 	    drawDecor();
 	    drawTiles();
 	    drawEntities();
-	    drawCursor((0, _input.getCursorPos)());
+	    drawCursor();
 	}
 
 	exports.draw = draw;
@@ -719,33 +723,44 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.keyState = exports.getCursorPos = undefined;
+	exports.CURSOR_STATE = exports.KEY_STATE = exports.getCursorPos = undefined;
 
 	var _UI = __webpack_require__(8);
 
-	var _update = __webpack_require__(9);
-
 	var _entity = __webpack_require__(5);
 
-	var _units = __webpack_require__(12);
+	var _units = __webpack_require__(9);
 
-	var _action = __webpack_require__(11);
+	var _action = __webpack_require__(10);
 
 	var _terrain = __webpack_require__(1);
 
-	var _player = __webpack_require__(10);
-
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var CURSOR_POS = { x: 0, y: 0 };
-
-	var keyState = {
+	var KEY_STATE = {
 	    arrows: new Set(),
 	    ctrl: false,
 	    shift: false,
 	    alt: false,
 	    j: false,
 	    k: false
+	};
+
+	var CURSOR_STATE = {
+	    x: -10,
+	    y: -10,
+	    leftButtonDown: false,
+	    rightButtonDown: false,
+	    drag: false,
+	    dragStartX: 0,
+	    dragStartY: 0,
+	    dragArea: {
+	        width: 0,
+	        height: 0,
+	        x: 0,
+	        y: 0
+	    }
+
 	};
 
 	var GameEvent = function GameEvent(etity, event, value) {
@@ -756,10 +771,30 @@
 	    this.value = value;
 	};
 
+	function mouseDown(e) {
+	    switch (e.button) {
+	        case 0:
+	            CURSOR_STATE.leftButtonDown = true;
+	            break;
+	        case 1:
+	            CURSOR_STATE.rightButtonDown = true;
+	    }
+	}
+
+	function mouseUp(e) {
+	    switch (e.button) {
+	        case 0:
+	            CURSOR_STATE.leftButtonDown = false;
+	            break;
+	        case 1:
+	            CURSOR_STATE.rightButtonDown = false;
+	    }
+	}
+
 	function mouseMove(e) {
 	    var m = mouseToGrid(e);
-	    CURSOR_POS.x = m.x;
-	    CURSOR_POS.y = m.y;
+	    CURSOR_STATE.x = m.x;
+	    CURSOR_STATE.y = m.y;
 
 	    //mousex.textContent = m.x;
 	    //mousey.textContent = m.y;
@@ -792,46 +827,124 @@
 	    }
 	}
 
-	function makeKeysFalseExcept(thisone) {
-	    for (var k in keyState.arrows) {
-	        console.log(k, keyState.arrows[k]);
-	        if (k !== thisone) keyState.arrows[k] = false;
-	    }
-	}
-
 	function inputKeyDown(e) {
 	    e.preventDefault();
 
 	    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
-	        keyState.arrows.add(e.keyCode);
+	        KEY_STATE.arrows.add(e.keyCode);
 	    }
 
 	    switch (e.keyCode) {
 	        case 74:
-	            keyState.j = true;
+	            KEY_STATE.j = true;
 	            return;
 	        case 75:
-	            keyState.k = true;
+	            KEY_STATE.k = true;
 	    }
 	}
 
 	function inputKeyUp(e) {
 	    e.preventDefault();
 
-	    keyState.arrows.delete(e.keyCode);
+	    KEY_STATE.arrows.delete(e.keyCode);
 
 	    switch (e.keyCode) {
 	        case 74:
-	            keyState.j = false;
+	            KEY_STATE.j = false;
 	            break;
 	        case 75:
-	            keyState.k = false;
+	            KEY_STATE.k = false;
 	            break;
 	    }
 	}
 
 	function getCursorPos() {
-	    return { x: CURSOR_POS.x, y: CURSOR_POS.y };
+	    return { x: CURSOR_STATE.x, y: CURSOR_STATE.y };
+	}
+
+	//Tile click and drag functions
+	function onDragStart() {
+	    //track cursor tile location on mousedown
+	    CURSOR_STATE.dragStartX = CURSOR_STATE.x;
+	    CURSOR_STATE.dragStartY = CURSOR_STATE.y;
+	}
+	function getDragDirection() {
+	    //Has mouse travelled more in the X or in the Y direction?
+	    //1 for y axis, 2 for x axis. positive or negative
+	    var sx = CURSOR_STATE.dragStartX,
+	        cx = CURSOR_STATE.x,
+	        sy = CURSOR_STATE.dragStartY,
+	        cy = CURSOR_STATE.y,
+	        dAxis;
+
+	    //Check for larger axis delta
+	    Math.abs(sx - cx) > Math.abs(sy - cy) ? dAxis = 2 : dAxis = 1;
+
+	    //Find direction on axis
+	    if (dAxis === 1) {
+	        //If current Y value is smaller than start Y, cursor moved in negative Y direction
+	        if (cy < sy) {
+	            dAxis *= -1;
+	        }
+	        //If it's not smaller, leave dAxis as it was a move in the positive direction
+	    } else {
+	            if (cx < sx) {
+	                dAxis *= -1;
+	            }
+	        }
+	    return dAxis;
+	}
+
+	function onDrag() {
+	    //Goes on mousemove. if mouse is still down leaves drag start tile, it is a drag
+	    if (CURSOR_STATE.leftButtonDown === true && (CURSOR_STATE.x !== CURSOR_STATE.dragStartX || CURSOR_STATE.y !== CURSOR_STATE.dragStartY)) {
+	        CURSOR_STATE.drag = true;
+	    }
+	    if (CURSOR_STATE.drag === true) {
+	        var da = CURSOR_STATE.dragArea;
+	        var dir = getDragDirection(),
+	            sx = CURSOR_STATE.dragStartX,
+	            cx = CURSOR_STATE.x,
+	            sy = CURSOR_STATE.dragStartY,
+	            cy = CURSOR_STATE.y;
+	        //console.log('cx', cx, 'cy', cy);
+
+	        switch (dir) {
+	            case 1:
+	                //positive Y
+	                da.height = Math.abs(cy - sy);
+	                da.width = 10;
+	                da.x = sx;
+	                da.y = sy;
+	                break;
+	            case -1:
+	                //negative Y
+	                da.height = Math.abs(cy - sy) + 10;
+	                da.width = 10;
+	                da.x = sx;
+	                da.y = cy;
+	                console.log(cy);
+	                break;
+	            case 2:
+	                // positive X
+	                da.height = 10;
+	                da.width = Math.abs(cx - sx);
+	                da.x = sx;
+	                da.y = sy;
+	                break;
+	            case -2:
+	                //negative X
+	                da.height = 10;
+	                da.width = Math.abs(cx - sx) + 10;
+	                da.x = cx;
+	                da.y = sy;
+	                break;
+	        }
+	    }
+	}
+
+	function onDragRelease(e) {
+	    CURSOR_STATE.drag = false;
 	}
 
 	window.addEventListener('DOMContentLoaded', function () {
@@ -839,13 +952,24 @@
 	        return false;
 	    };
 	    _UI.canvas.addEventListener('mousedown', canvasClick);
+
+	    window.addEventListener('mousedown', mouseDown);
+	    _UI.canvas.addEventListener('mousedown', onDragStart);
+
+	    window.addEventListener('mouseup', mouseUp);
+	    _UI.canvas.addEventListener('mouseup', onDragRelease);
+
 	    window.addEventListener('mousemove', mouseMove);
+	    _UI.canvas.addEventListener('mousemove', onDrag);
+
 	    window.addEventListener('keydown', inputKeyDown);
 	    window.addEventListener('keyup', inputKeyUp);
 	});
 
+	window.C = CURSOR_STATE;
 	exports.getCursorPos = getCursorPos;
-	exports.keyState = keyState;
+	exports.KEY_STATE = KEY_STATE;
+	exports.CURSOR_STATE = CURSOR_STATE;
 
 /***/ },
 /* 8 */
@@ -899,151 +1023,37 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.QUEUE = exports.update = undefined;
+	exports.addRandomMonster = undefined;
 
 	var _entity = __webpack_require__(5);
 
-	var _player = __webpack_require__(10);
-
-	var _input = __webpack_require__(7);
-
-	var _action = __webpack_require__(11);
-
-	var QUEUE = [];
-
-	function update() {
-	    //1 sec updates
-	    /*
-	    time = Date.now() / 1000;
-	    if(time - lastTime > 1 ) {
-	        var fps = (turn / (time - lastTime)).toFixed(0);
-	        UI.fps(fps); //implement
-	        lastTime = time;
-	        turn = 0;
-	    }
-	    */
-	    //turn++;
-
-	    function prune() {
-	        var entities = _entity.Entity.all();
-	        var _iteratorNormalCompletion = true;
-	        var _didIteratorError = false;
-	        var _iteratorError = undefined;
-
-	        try {
-	            for (var _iterator = entities[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                var i = _step.value;
-
-	                var ent = i[1];
-	                if (ent.state === 0) {
-	                    _entity.Entity.destroy(ent.uuid);
-	                }
+	function addRandomMonster() {
+	    function randoUpdate(self) {
+	        self.wait++;
+	        var lastDir = self.dir;
+	        if (self.wait >= self.rest) {
+	            var move;
+	            if (Math.random() > 0.35) {
+	                move = lastDir;
+	            } else {
+	                move = Math.floor(Math.random() * 4);
 	            }
-	        } catch (err) {
-	            _didIteratorError = true;
-	            _iteratorError = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion && _iterator.return) {
-	                    _iterator.return();
-	                }
-	            } finally {
-	                if (_didIteratorError) {
-	                    throw _iteratorError;
-	                }
-	            }
+	            if (move === 0) self.moveDown();
+	            if (move === 1) self.moveRight();
+	            if (move === 2) self.moveUp();
+	            if (move === 3) self.moveLeft();
+	            self.wait = 0;
 	        }
 	    }
-
-	    function updateEntities() {
-	        var entities = _entity.Entity.all();
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	            for (var _iterator2 = entities[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var i = _step2.value;
-
-	                var current = i[1];
-	                current.update(current);
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                    _iterator2.return();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
-	    }
-
-	    //Process player movement event
-	    //If there's a player action allow updates to advance one step
-	    function updatePlayerBehavior() {
-	        var player = (0, _player.getPlayer)();
-	        switch (Array.from(_input.keyState.arrows.values()).pop()) {
-	            case 40:
-	                player.moveDown();
-	                break;
-	            case 39:
-	                player.moveRight();
-	                break;
-	            case 38:
-	                player.moveUp();
-	                break;
-	            case 37:
-	                player.moveLeft();
-	                break;
-	        }
-	        if (_input.keyState.j) {
-	            _action.Action.shoot(player, player.dir);
-	        }
-	    }
-
-	    updatePlayerBehavior();
-	    updateEntities();
-	    prune();
+	    new _entity.Entity('monster', 100, 100, randoUpdate, 15, 1, 0);
 	}
 
-	exports.update = update;
-	exports.QUEUE = QUEUE;
+	addRandomMonster();
+
+	exports.addRandomMonster = addRandomMonster;
 
 /***/ },
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.getPlayer = undefined;
-
-	var _entity = __webpack_require__(5);
-
-	var _action = __webpack_require__(11);
-
-	function playerUpdate(self) {
-	    self.wait++;
-	    self.attackWait++;
-	}
-	var player = new _entity.Entity('player', 10, 10, playerUpdate, 10, 1, 0);
-
-	function getPlayer() {
-	    return _entity.Entity.findByUUID(player.uuid);
-	}
-
-	exports.getPlayer = getPlayer;
-
-/***/ },
-/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1126,6 +1136,131 @@
 	exports.Action = Action;
 
 /***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.QUEUE = exports.update = undefined;
+
+	var _entity = __webpack_require__(5);
+
+	var _player = __webpack_require__(12);
+
+	var _input = __webpack_require__(7);
+
+	var _action = __webpack_require__(10);
+
+	var QUEUE = [];
+
+	function update() {
+	    //1 sec updates
+	    /*
+	    time = Date.now() / 1000;
+	    if(time - lastTime > 1 ) {
+	        var fps = (turn / (time - lastTime)).toFixed(0);
+	        UI.fps(fps); //implement
+	        lastTime = time;
+	        turn = 0;
+	    }
+	    */
+	    //turn++;
+
+	    function prune() {
+	        var entities = _entity.Entity.all();
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
+
+	        try {
+	            for (var _iterator = entities[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var i = _step.value;
+
+	                var ent = i[1];
+	                if (ent.state === 0) {
+	                    _entity.Entity.destroy(ent.uuid);
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError = true;
+	            _iteratorError = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion && _iterator.return) {
+	                    _iterator.return();
+	                }
+	            } finally {
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
+	                }
+	            }
+	        }
+	    }
+
+	    function updateEntities() {
+	        var entities = _entity.Entity.all();
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+
+	        try {
+	            for (var _iterator2 = entities[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var i = _step2.value;
+
+	                var current = i[1];
+	                current.update(current);
+	            }
+	        } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                    _iterator2.return();
+	                }
+	            } finally {
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
+	                }
+	            }
+	        }
+	    }
+
+	    //Process player movement event
+	    //If there's a player action allow updates to advance one step
+	    function updatePlayerBehavior() {
+	        var player = (0, _player.getPlayer)();
+	        switch (Array.from(_input.KEY_STATE.arrows.values()).pop()) {
+	            case 40:
+	                player.moveDown();
+	                break;
+	            case 39:
+	                player.moveRight();
+	                break;
+	            case 38:
+	                player.moveUp();
+	                break;
+	            case 37:
+	                player.moveLeft();
+	                break;
+	        }
+	        if (_input.KEY_STATE.j) {
+	            _action.Action.shoot(player, player.dir);
+	        }
+	    }
+
+	    updatePlayerBehavior();
+	    updateEntities();
+	    prune();
+	}
+
+	exports.update = update;
+	exports.QUEUE = QUEUE;
+
+/***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1134,34 +1269,23 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.addRandomMonster = undefined;
+	exports.getPlayer = undefined;
 
 	var _entity = __webpack_require__(5);
 
-	function addRandomMonster() {
-	    function randoUpdate(self) {
-	        self.wait++;
-	        var lastDir = self.dir;
-	        if (self.wait >= self.rest) {
-	            var move;
-	            if (Math.random() > 0.35) {
-	                move = lastDir;
-	            } else {
-	                move = Math.floor(Math.random() * 4);
-	            }
-	            if (move === 0) self.moveDown();
-	            if (move === 1) self.moveRight();
-	            if (move === 2) self.moveUp();
-	            if (move === 3) self.moveLeft();
-	            self.wait = 0;
-	        }
-	    }
-	    new _entity.Entity('monster', 100, 100, randoUpdate, 15, 1, 0);
+	var _action = __webpack_require__(10);
+
+	function playerUpdate(self) {
+	    self.wait++;
+	    self.attackWait++;
+	}
+	var player = new _entity.Entity('player', 10, 10, playerUpdate, 10, 1, 0);
+
+	function getPlayer() {
+	    return _entity.Entity.findByUUID(player.uuid);
 	}
 
-	addRandomMonster();
-
-	exports.addRandomMonster = addRandomMonster;
+	exports.getPlayer = getPlayer;
 
 /***/ }
 /******/ ]);
