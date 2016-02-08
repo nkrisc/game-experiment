@@ -4,8 +4,9 @@
 import * as constants from './constants.js';
 import { Tile, Decor } from './terrain.js';
 import { Entity } from './entity.js';
+import { MAINBAR, ctx } from './UI.js';
 import { CURSOR_STATE } from './input.js';
-import { ctx } from './UI.js';
+import { SCENE } from './scene.js';
 
 //IMAGES
 const root = 'assets/';
@@ -130,6 +131,24 @@ function draw() {
         } else {
             var da = CURSOR_STATE.dragArea;
             ctx.strokeRect(da.x, da.y, da.width, da.height)
+        }
+    }
+
+    function drawMenu() {
+        var buttonSpacing = 10,
+            barWidth = MAINBAR.size() + MAINBAR.size() * buttonSpacing,
+            barX = SCENE.VIEW.width / 2 - barWidth / 2;
+        ctx.fillStyle = '#00ff00';
+
+        for (var i = 0; i < MAINBAR.size(); i++) {
+            var x = barX;
+            if (MAINBAR.buttons[i].icon) {
+                //draw icon
+            } else {
+                //default shape
+                ctx.fillRect(x, SCENE.VIEW.height - 40, 30, 30);
+            }
+            x += 30 + buttonSpacing;
         }
     }
 
