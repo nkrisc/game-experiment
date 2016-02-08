@@ -43,20 +43,24 @@ function update() {
         switch (Array.from(KEY_STATE.arrows.values()).pop()) {
             case 40:
                 //If play can move (it will) and player is within 50 of view bottom and view isn't at scene edge
-                if (player.moveDown() && player.y >= SCENE.VIEW.bottom() - 50 && SCENE.bottom() !== SCENE.VIEW.bottom()) {
-                    console.log('SCENE', SCENE.top(), SCENE.right(), SCENE.bottom(), SCENE.left());
-                    console.log('VIEW', SCENE.VIEW.top(), SCENE.VIEW.right(), SCENE.VIEW.bottom(), SCENE.VIEW.left());
+                if (player.moveDown() && player.y >= SCENE.VIEW.bottom() - 70 && SCENE.bottom() !== SCENE.VIEW.bottom()) {
                     offsetY(-10);
                 }
                 break;
             case 39:
-                if (player.moveRight() && player.x >= SCENE.VIEW.right() - 50 && SCENE.right() !== SCENE.VIEW.right()) offsetX(-10);
+                if (player.moveRight() && player.x >= SCENE.VIEW.right() - 50 && SCENE.right() !== SCENE.VIEW.right()) {
+                    offsetX(-10);
+                }
                 break;
             case 38:
-                if (player.moveUp() && player.y <= SCENE.VIEW.top() + 50 && SCENE.top() !== SCENE.VIEW.top()) offsetY(10);
+                if (player.moveUp() && player.y <= SCENE.VIEW.top() + 50 && SCENE.top() !== SCENE.VIEW.top()) {
+                    offsetY(10);
+                }
                 break;
             case 37:
-                if (player.moveLeft() && player.x <= SCENE.VIEW.left() + 50 && SCENE.left() !== SCENE.VIEW.left()) offsetX(10);
+                if (player.moveLeft() && player.x <= SCENE.VIEW.left() + 50 && SCENE.left() !== SCENE.VIEW.left()) {
+                    offsetX(10);
+                }
                 break;
         }
         if (KEY_STATE.j) {

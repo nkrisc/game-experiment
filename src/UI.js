@@ -47,11 +47,4 @@ var mainButtons = [
 ];
 const MAINBAR = new ToolBar('main', mainButtons);
 
-function getCanvas(id) {
-    //var scene = document.getElementById('scene');
-    var ctx = scene.getContext('2d');
-
-    return { scene, ctx };
-}
-
-export { getCanvas, canvas, ctx}
+export { canvas, ctx, MAINBAR}

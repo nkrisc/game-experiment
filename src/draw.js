@@ -6,7 +6,6 @@ import { Tile, Decor } from './terrain.js';
 import { Entity } from './entity.js';
 import { MAINBAR, ctx } from './UI.js';
 import { CURSOR_STATE } from './input.js';
-import { ctx } from './UI.js';
 import { offsetX, offsetY, SCENE } from './scene.js';
 
 //IMAGES
@@ -137,25 +136,32 @@ function draw() {
 
     function drawMenu() {
         var buttonSpacing = 10,
-            barWidth = MAINBAR.size() + MAINBAR.size() * buttonSpacing,
-            barX = SCENE.VIEW.width / 2 - barWidth / 2;
-        ctx.fillStyle = '#00ff00';
-
+            barWidth = MAINBAR.size() * 30 + MAINBAR.size() * buttonSpacing,
+            barX = SCENE.VIEW.width / 2 - barWidth / 2,
+            ix = barX,
+            barY = SCENE.VIEW.height - 40;
         for (var i = 0; i < MAINBAR.size(); i++) {
-            var x = barX;
             if (MAINBAR.buttons[i].icon) {
                 //draw icon
             } else {
                 //default shape
-                ctx.fillRect(x, SCENE.VIEW.height - 40, 30, 30);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(ix, barY, 30, 30);
             }
-            x += 30 + buttonSpacing;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '11 Courier New';
+            ctx.fillText(i + 1, ix + 2, SCENE.VIEW.height - 30);
+            ix += 30 + buttonSpacing;
         }
+
+        ctx.strokeStyle = '#f2f2f2';
+        ctx.strokeRect(barX + MAINBAR.selected * 30 + MAINBAR.selected * buttonSpacing, barY, 30, 30)
     }
 
     drawDecor();
     drawTiles();
     drawEntities();
     drawCursor();
+    drawMenu();
 }
 export { draw }

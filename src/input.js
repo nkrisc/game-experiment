@@ -221,7 +221,6 @@ function onDragRelease(e) {
         if (CURSOR_STATE.drag) {
             CURSOR_STATE.drag = false;
             var da = CURSOR_STATE.dragArea;
-            console.log(da.x, da.width, da.y, da.height);
             for (var x = 0; x < da.width / 10; x++) {
                 for (var y = 0; y < da.height / 10; y++) {
                     var tx = x * 10 + da.x;
@@ -230,7 +229,7 @@ function onDragRelease(e) {
                 }
             }
         } else {
-            new Tile(CURSOR_STATE.x, CURSOR_STATE.y, 'obstacle');
+            new Tile(CURSOR_STATE.x - offsetX(), CURSOR_STATE.y - offsetY(), 'obstacle');
         }
     }
 }
