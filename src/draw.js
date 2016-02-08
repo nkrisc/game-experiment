@@ -6,7 +6,8 @@ import { Tile, Decor } from './terrain.js';
 import { Entity } from './entity.js';
 import { MAINBAR, ctx } from './UI.js';
 import { CURSOR_STATE } from './input.js';
-import { SCENE } from './scene.js';
+import { ctx } from './UI.js';
+import { offsetX, offsetY, SCENE } from './scene.js';
 
 //IMAGES
 const root = 'assets/';
@@ -61,14 +62,14 @@ T[4].src = root + 'terrain-detail-5.png';
 
 function draw() {
     ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
+    ctx.fillRect(0, 0, SCENE.width, SCENE.height);
 
     //draw terrain details first
     function drawDecor() {
         var  decor = Decor.all();
         for (var [, v] of decor) {
             let current = v;
-            ctx.drawImage(T[4], current.x, current.y)
+            ctx.drawImage(T[4], current.x + offsetX(), current.y + offsetY())
         }
     }
     //then draw environment
@@ -77,10 +78,10 @@ function draw() {
         for (var [, v] of tiles) {
             var tile = v;
             if (tile.type === 'door') {
-                ctx.drawImage(D, tile.x, tile.y);
+                ctx.drawImage(D, tile.x + offsetX(), tile.y + offsetY());
             }
             if (tile.type === 'obstacle') {
-                ctx.drawImage(O, tile.x, tile.y);
+                ctx.drawImage(O, tile.x + offsetX(), tile.y + offsetY());
             }
         }
     }
@@ -92,32 +93,32 @@ function draw() {
             var ent = v;
             if (ent.type === 'shot' && ent.state === 1) {
                 ctx.fillStyle = '#ff0000';
-                ctx.fillRect(ent.x + 2.5, ent.y + 2.5, 5, 5)
+                ctx.fillRect(ent.x + 2.5 + offsetX(), ent.y + 2.5 + offsetY(), 5, 5)
             }
             if (ent.type === 'arrow' && ent.state === 1) {
                 if (ent.dir === 0) {
-                    ctx.drawImage(A.down, ent.x, ent.y);
+                    ctx.drawImage(A.down, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 1) {
-                    ctx.drawImage(A.right, ent.x, ent.y);
+                    ctx.drawImage(A.right, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 2) {
-                    ctx.drawImage(A.up, ent.x, ent.y);
+                    ctx.drawImage(A.up, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 3) {
-                    ctx.drawImage(A.left, ent.x, ent.y);
+                    ctx.drawImage(A.left, ent.x + offsetX(), ent.y + offsetY());
                 }
             }
             if (ent.type === 'monster' && ent.state === 1) {
                 ctx.fillStyle = '#00ffff';
-                ctx.fillRect(ent.x, ent.y, 10, 10);
+                ctx.fillRect(ent.x + offsetX(), ent.y + offsetY(), 10, 10);
             }
             if (ent.type === 'player' && ent.state === 1) {
                 if (ent.dir === 0) {
-                    ctx.drawImage(P.down, ent.x, ent.y);
+                    ctx.drawImage(P.down, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 1) {
-                    ctx.drawImage(P.right, ent.x, ent.y);
+                    ctx.drawImage(P.right, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 2) {
-                    ctx.drawImage(P.up, ent.x, ent.y);
+                    ctx.drawImage(P.up, ent.x + offsetX(), ent.y + offsetY());
                 } else if (ent.dir === 3) {
-                    ctx.drawImage(P.left, ent.x, ent.y);
+                    ctx.drawImage(P.left, ent.x + offsetX(), ent.y + offsetY());
                 }
             }
         }
@@ -156,8 +157,5 @@ function draw() {
     drawTiles();
     drawEntities();
     drawCursor();
-
-
 }
-
 export { draw }

@@ -60,7 +60,7 @@
 
 	var constants = _interopRequireWildcard(_constants);
 
-	var _input = __webpack_require__(8);
+	var _input = __webpack_require__(7);
 
 	var handler = _interopRequireWildcard(_input);
 
@@ -505,11 +505,9 @@
 
 	var _entity = __webpack_require__(5);
 
-	var _UI = __webpack_require__(7);
+	var _input = __webpack_require__(7);
 
-	var _input = __webpack_require__(8);
-
-	var _scene = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./scene.js\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	var _UI = __webpack_require__(8);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -708,24 +706,6 @@
 	        }
 	    }
 
-	    function drawMenu() {
-	        var buttonSpacing = 10,
-	            barWidth = _UI.MAINBAR.size() + _UI.MAINBAR.size() * buttonSpacing,
-	            barX = _scene.SCENE.VIEW.width / 2 - barWidth / 2;
-	        _UI.ctx.fillStyle = '#00ff00';
-
-	        for (var i = 0; i < _UI.MAINBAR.size(); i++) {
-	            var x = barX;
-	            if (_UI.MAINBAR.buttons[i].icon) {
-	                //draw icon
-	            } else {
-	                    //default shape
-	                    _UI.ctx.fillRect(x, _scene.SCENE.VIEW.height - 40, 30, 30);
-	                }
-	            x += 30 + buttonSpacing;
-	        }
-	    }
-
 	    drawDecor();
 	    drawTiles();
 	    drawEntities();
@@ -743,82 +723,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.ctx = exports.canvas = exports.getCanvas = undefined;
-
-	var _constants = __webpack_require__(3);
-
-	var constants = _interopRequireWildcard(_constants);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var canvas, ctx;
-	//Look to deprecate
-	document.addEventListener('DOMContentLoaded', function () {
-	    exports.canvas = canvas = document.getElementById('scene');
-	    exports.ctx = ctx = canvas.getContext('2d');
-	    ctx.fillStyle = '#000000';
-	    ctx.fillRect(0, 0, constants.CANVAS_HEIGHT, constants.CANVAS_WIDTH);
-	    canvas.height = constants.CANVAS_HEIGHT;
-	    canvas.width = constants.CANVAS_WIDTH;
-
-	    var tile = document.getElementById('tile'),
-	        mousex = document.getElementById('mousex'),
-	        mousey = document.getElementById('mousey'),
-	        fps = document.getElementById('fps');
-	});
-
-	var UIButton = function UIButton(name, icon, select) {
-	    _classCallCheck(this, UIButton);
-
-	    icon instanceof HTMLImageElement ? this.icon = icon : this.icon = null;
-	    typeof name === 'string' ? this.name = name : this.name = null;
-	    typeof select === 'function' ? this.select = select : this.select = null;
-	};
-
-	var ToolBar = function ToolBar(name, buttonArray) {
-	    _classCallCheck(this, ToolBar);
-
-	    typeof name === 'string' ? this.name = name : this.name = null;
-	    buttonArray instanceof Array ? this.buttons = buttonArray : this.buttons = [];
-	    this.selected = 0;
-	    this.select = function (index) {
-	        this.selected = index;
-	        if (this.buttons[index].select) this.buttons[index].select();
-	        return this.buttons[index];
-	    };
-	    this.size = function () {
-	        return this.buttons.length;
-	    };
-	};
-
-	var mainButtons = [new UIButton('obstacle', null, null), new UIButton('door', null, null), new UIButton('floor', null, null)];
-	var MAINBAR = new ToolBar('main', mainButtons);
-
-	function getCanvas(id) {
-	    //var scene = document.getElementById('scene');
-	    var ctx = scene.getContext('2d');
-
-	    return { scene: scene, ctx: ctx };
-	}
-
-	exports.getCanvas = getCanvas;
-	exports.canvas = canvas;
-	exports.ctx = ctx;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
 	exports.CURSOR_STATE = exports.KEY_STATE = exports.getCursorPos = undefined;
 
-	var _UI = __webpack_require__(7);
+	var _UI = __webpack_require__(8);
 
 	var _entity = __webpack_require__(5);
 
@@ -1082,6 +989,49 @@
 	exports.CURSOR_STATE = CURSOR_STATE;
 
 /***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.ctx = exports.canvas = exports.getCanvas = undefined;
+
+	var _constants = __webpack_require__(3);
+
+	var constants = _interopRequireWildcard(_constants);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var canvas, ctx;
+	document.addEventListener('DOMContentLoaded', function () {
+	    exports.canvas = canvas = document.getElementById('scene');
+	    exports.ctx = ctx = canvas.getContext('2d');
+	    ctx.fillStyle = '#000000';
+	    ctx.fillRect(0, 0, constants.CANVAS_HEIGHT, constants.CANVAS_WIDTH);
+	    canvas.height = constants.CANVAS_HEIGHT;
+	    canvas.width = constants.CANVAS_WIDTH;
+
+	    var tile = document.getElementById('tile'),
+	        mousex = document.getElementById('mousex'),
+	        mousey = document.getElementById('mousey'),
+	        fps = document.getElementById('fps');
+	});
+
+	function getCanvas(id) {
+	    //var scene = document.getElementById('scene');
+	    var ctx = scene.getContext('2d');
+
+	    return { scene: scene, ctx: ctx };
+	}
+
+	exports.getCanvas = getCanvas;
+	exports.canvas = canvas;
+	exports.ctx = ctx;
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1217,7 +1167,7 @@
 
 	var _player = __webpack_require__(12);
 
-	var _input = __webpack_require__(8);
+	var _input = __webpack_require__(7);
 
 	var _action = __webpack_require__(10);
 

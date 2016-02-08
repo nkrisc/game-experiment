@@ -3,6 +3,7 @@ import { Entity } from './entity.js';
 import { addRandomMonster } from './units.js';
 import { Action } from './action.js';
 import { Tile, Decor } from './terrain.js';
+import { offsetX, offsetY } from './scene.js';
 
 const KEY_STATE = {
     arrows: new Set(),
@@ -225,7 +226,7 @@ function onDragRelease(e) {
                 for (var y = 0; y < da.height / 10; y++) {
                     var tx = x * 10 + da.x;
                     var ty = y * 10 + da.y;
-                    new Tile(tx, ty, 'obstacle');
+                    new Tile(tx - offsetX(), ty - offsetY(), 'obstacle');
                 }
             }
         } else {

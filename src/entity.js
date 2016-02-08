@@ -6,6 +6,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants.js';
 import { ObjectList } from './objectlist.js';
 import { GameObject } from './gameobject.js';
 import { Tile } from './terrain.js';
+import { SCENE } from './scene.js';
 //TODO combine offscreen and legal move checks into one game area module
 
 const ENTITIES = new ObjectList();
@@ -22,43 +23,43 @@ class Entity extends GameObject {
         this.uuid = GameObject.generateUUID();
 
         this.moveDown = function(steps) {
+            this.dir = 0;
             if (Tile.isLegalMove(this.x, this.y + 10) && this.wait >= this.rest) {
                 this.wait = 0;
                 steps = steps || 1;
                 this.y += steps * 10;
+                return true;
             }
-            this.dir = 0;
         };
 
         this.moveRight = function(steps) {
+            this.dir = 1;
             if (Tile.isLegalMove(this.x + 10, this.y) && this.wait >= this.rest) {
                 this.wait = 0;
                 steps = steps || 1;
                 this.x += steps * 10;
+                return true;
             }
-            this.dir = 1;
         };
 
         this.moveUp = function(steps) {
+            this.dir = 2;
             if (Tile.isLegalMove(this.x, this.y - 10) && this.wait >= this.rest) {
                 this.wait = 0;
                 steps = steps || 1;
                 this.y -= steps * 10;
+                return true;
             }
-            this.dir = 2;
         };
 
         this.moveLeft = function(steps) {
+            this.dir = 3;
             if (Tile.isLegalMove(this.x - 10, this.y) && this.wait >= this.rest) {
                 this.wait = 0;
                 steps = steps || 1;
                 this.x -= steps * 10;
+                return true;
             }
-            this.dir = 3;
-        };
-
-        this.isOffScreen = function() {
-            return !!(this.x > CANVAS_WIDTH || this.x < 0 || this.y > CANVAS_HEIGHT || this.y < 0);
         };
 
         this.destroy = function() {
