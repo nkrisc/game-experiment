@@ -46,6 +46,10 @@ A.up.src = root + 'arrow-up.png';
 A.left = new Image(10,10);
 A.left.src = root + 'arrow-left.png';
 
+//Menu Background
+const M = new Image(10,10);
+M.src = root + 'action-bar.png';
+
 //Terrain detail images
 const T = [];
 T[0] = new Image(10,10);
@@ -140,9 +144,12 @@ function draw() {
             barX = SCENE.VIEW.width / 2 - barWidth / 2,
             ix = barX,
             barY = SCENE.VIEW.height - 40;
+
+        ctx.drawImage(M, 0, SCENE.VIEW.height - 50);
+
         for (var i = 0; i < MAINBAR.size(); i++) {
             if (MAINBAR.buttons[i].icon) {
-                //draw icon
+                ctx.drawImage(MAINBAR.buttons[i].icon, ix, barY);
             } else {
                 //default shape
                 ctx.fillStyle = '#00ff00';

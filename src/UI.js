@@ -40,10 +40,16 @@ class  ToolBar {
     }
 }
 
+function getIcon(icon) {
+    var img = new Image(30,30);
+    img.src = icon;
+    return img;
+}
+
 var mainButtons = [
-    new UIButton('obstacle', null, null),
-    new UIButton('door', null, null),
-    new UIButton('floor', null, null)
+    new UIButton('obstacle', getIcon('assets/tile-obstacle-blue.png'), null),
+    new UIButton('orange wall', getIcon('assets/tile-obstacle-orange.png'), null),
+    new UIButton('stone wall', getIcon('assets/tile-obstacle-stone.png'), null)
 ];
 const MAINBAR = new ToolBar('main', mainButtons);
 

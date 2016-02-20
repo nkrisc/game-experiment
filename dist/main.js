@@ -639,6 +639,10 @@
 	A.left = new Image(10, 10);
 	A.left.src = root + 'arrow-left.png';
 
+	//Menu Background
+	var M = new Image(10, 10);
+	M.src = root + 'action-bar.png';
+
 	//Terrain detail images
 	var T = [];
 	T[0] = new Image(10, 10);
@@ -802,14 +806,17 @@
 	            barX = _scene.SCENE.VIEW.width / 2 - barWidth / 2,
 	            ix = barX,
 	            barY = _scene.SCENE.VIEW.height - 40;
+
+	        _UI.ctx.drawImage(M, 0, _scene.SCENE.VIEW.height - 50);
+
 	        for (var i = 0; i < _UI.MAINBAR.size(); i++) {
 	            if (_UI.MAINBAR.buttons[i].icon) {
-	                //draw icon
+	                _UI.ctx.drawImage(_UI.MAINBAR.buttons[i].icon, ix, barY);
 	            } else {
-	                    //default shape
-	                    _UI.ctx.fillStyle = '#00ff00';
-	                    _UI.ctx.fillRect(ix, barY, 30, 30);
-	                }
+	                //default shape
+	                _UI.ctx.fillStyle = '#00ff00';
+	                _UI.ctx.fillRect(ix, barY, 30, 30);
+	            }
 	            _UI.ctx.fillStyle = '#ffffff';
 	            _UI.ctx.font = '11 Courier New';
 	            _UI.ctx.fillText(i + 1, ix + 2, _scene.SCENE.VIEW.height - 30);
@@ -887,7 +894,13 @@
 	    };
 	};
 
-	var mainButtons = [new UIButton('obstacle', null, null), new UIButton('door', null, null), new UIButton('floor', null, null)];
+	function getIcon(icon) {
+	    var img = new Image(30, 30);
+	    img.src = icon;
+	    return img;
+	}
+
+	var mainButtons = [new UIButton('obstacle', getIcon('assets/tile-obstacle-blue.png'), null), new UIButton('orange wall', getIcon('assets/tile-obstacle-orange.png'), null), new UIButton('stone wall', getIcon('assets/tile-obstacle-stone.png'), null)];
 	var MAINBAR = new ToolBar('main', mainButtons);
 
 	exports.canvas = canvas;
@@ -970,6 +983,7 @@
 	            break;
 	        case 1:
 	            CURSOR_STATE.rightButtonDown = false;
+	            break;
 	    }
 	}
 
@@ -1022,9 +1036,22 @@
 	    switch (e.keyCode) {
 	        case 74:
 	            KEY_STATE.j = true;
-	            return;
+	            break;
 	        case 75:
 	            KEY_STATE.k = true;
+	            break;
+	        case 49:
+	            //1
+	            _UI.MAINBAR.selected = 0;
+	            break;
+	        case 50:
+	            //2
+	            _UI.MAINBAR.selected = 1;
+	            break;
+	        case 51:
+	            //3
+	            _UI.MAINBAR.selected = 2;
+	            break;
 	    }
 	}
 
@@ -1237,21 +1264,28 @@
 	            if (owner.attackWait < owner.attackRest) return;
 	            owner.attackWait = 0;
 	            var update = function update(self) {
+	                if (self.isOffScreen()) {
+	                    self.destroy();
+	                    return;
+	                }
 	                var hit = _terrain.Tile.find(self.x, self.y);
 	                if (hit) {
 	                    hit.destroy();
 	                    self.destroy();
 	                }
-	                if (self.isOffScreen()) {
-	                    self.destroy();
-	                } else if (self.dir === 0) {
-	                    this.y += 10;
-	                } else if (self.dir === 1) {
-	                    this.x += 10;
-	                } else if (self.dir === 2) {
-	                    this.y -= 10;
-	                } else if (self.dir === 3) {
-	                    this.x -= 10;
+	                switch (self.dir) {
+	                    case 0:
+	                        this.y += 10;
+	                        break;
+	                    case 1:
+	                        this.x += 10;
+	                        break;
+	                    case 2:
+	                        this.y -= 10;
+	                        break;
+	                    case 3:
+	                        this.x -= 10;
+	                        break;
 	                }
 	            };
 

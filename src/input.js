@@ -4,6 +4,7 @@ import { addRandomMonster } from './units.js';
 import { Action } from './action.js';
 import { Tile, Decor } from './terrain.js';
 import { offsetX, offsetY } from './scene.js';
+import { MAINBAR } from './UI.js';
 
 const KEY_STATE = {
     arrows: new Set(),
@@ -58,6 +59,7 @@ function mouseUp(e) {
             break;
         case 1:
             CURSOR_STATE.rightButtonDown = false;
+            break;
     }
 }
 
@@ -110,8 +112,22 @@ function inputKeyDown(e) {
     switch (e.keyCode) {
         case 74:
             KEY_STATE.j = true;
-            return;
-        case 75: KEY_STATE.k = true;
+            break;
+        case 75:
+            KEY_STATE.k = true;
+            break;
+        case 49:
+            //1
+            MAINBAR.selected = 0;
+            break;
+        case 50:
+            //2
+            MAINBAR.selected = 1;
+            break;
+        case 51:
+            //3
+            MAINBAR.selected = 2;
+            break;
     }
 }
 

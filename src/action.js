@@ -6,21 +6,28 @@ class Action {
         if (owner.attackWait < owner.attackRest) return;
         owner.attackWait = 0;
         var update = function(self) {
+            if (self.isOffScreen()) {
+                self.destroy();
+                return;
+            }
             var hit = Tile.find(self.x, self.y);
             if (hit) {
                 hit.destroy();
                 self.destroy();
             }
-            if (self.isOffScreen()) {
-                self.destroy();
-            }  else if (self.dir === 0) {
-                this.y += 10;
-            } else if (self.dir === 1) {
-                this.x += 10;
-            } else if (self.dir === 2) {
-                this.y -= 10;
-            } else if (self.dir === 3) {
-                this.x -= 10;
+            switch(self.dir) {
+                case 0:
+                    this.y += 10;
+                    break;
+                case 1:
+                    this.x += 10;
+                    break;
+                case 2:
+                    this.y -= 10;
+                    break;
+                case 3:
+                    this.x -= 10;
+                    break;
             }
         };
 
