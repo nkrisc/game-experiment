@@ -52,11 +52,11 @@
 
 	var _entity = __webpack_require__(5);
 
-	var _draw = __webpack_require__(7);
+	var _draw = __webpack_require__(6);
 
 	var _update = __webpack_require__(12);
 
-	var _constants = __webpack_require__(6);
+	var _constants = __webpack_require__(7);
 
 	var constants = _interopRequireWildcard(_constants);
 
@@ -431,15 +431,11 @@
 	});
 	exports.Entity = undefined;
 
-	var _terrain = __webpack_require__(1);
-
-	var _constants = __webpack_require__(6);
-
 	var _objectlist = __webpack_require__(4);
 
 	var _gameobject = __webpack_require__(2);
 
-	var _scene = __webpack_require__(3);
+	var _terrain = __webpack_require__(1);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -456,25 +452,26 @@
 	var Entity = function (_GameObject) {
 	    _inherits(Entity, _GameObject);
 
-	    function Entity(type, x, y, update, rest, state, dir) {
+	    function Entity(type, x, y, update, state, dir) {
 	        var _ret;
 
 	        _classCallCheck(this, Entity);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Entity).call(this, x, y, type, update));
 
-	        _this.rest = rest || 10;
-	        _this.attackRest = rest || 10;
 	        _this.state = state || 1;
 	        _this.dir = dir || 0;
-	        _this.wait = 0;
-	        _this.attackWait = 0;
+	        _this.energy = 0;
 	        _this.uuid = _gameobject.GameObject.generateUUID();
+
+	        _this.canAct = function () {
+	            return this.energy >= 100;
+	        };
 
 	        _this.moveDown = function (steps) {
 	            this.dir = 0;
-	            if (_terrain.Tile.isLegalMove(this.x, this.y + 10) && this.wait >= this.rest) {
-	                this.wait = 0;
+	            if (_terrain.Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
+	                this.energy = 0;
 	                steps = steps || 1;
 	                this.y += steps * 10;
 	                return true;
@@ -483,8 +480,8 @@
 
 	        _this.moveRight = function (steps) {
 	            this.dir = 1;
-	            if (_terrain.Tile.isLegalMove(this.x + 10, this.y) && this.wait >= this.rest) {
-	                this.wait = 0;
+	            if (_terrain.Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
+	                this.energy = 0;
 	                steps = steps || 1;
 	                this.x += steps * 10;
 	                return true;
@@ -493,8 +490,8 @@
 
 	        _this.moveUp = function (steps) {
 	            this.dir = 2;
-	            if (_terrain.Tile.isLegalMove(this.x, this.y - 10) && this.wait >= this.rest) {
-	                this.wait = 0;
+	            if (_terrain.Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
+	                this.energy = 0;
 	                steps = steps || 1;
 	                this.y -= steps * 10;
 	                return true;
@@ -503,11 +500,50 @@
 
 	        _this.moveLeft = function (steps) {
 	            this.dir = 3;
-	            if (_terrain.Tile.isLegalMove(this.x - 10, this.y) && this.wait >= this.rest) {
-	                this.wait = 0;
+	            if (_terrain.Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
+	                this.energy = 0;
 	                steps = steps || 1;
 	                this.x -= steps * 10;
 	                return true;
+	            }
+	        };
+
+	        _this.move = function (dir, steps) {
+	            this.dir = dir;
+	            this.steps = steps || 1;
+	            switch (dir) {
+	                case 0:
+	                    if (_terrain.Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
+	                        this.energy = 0;
+	                        steps = steps || 1;
+	                        this.y += steps * 10;
+	                        return true;
+	                    }
+	                    break;
+	                case 1:
+	                    if (_terrain.Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
+	                        this.energy = 0;
+	                        steps = steps || 1;
+	                        this.x += steps * 10;
+	                        return true;
+	                    }
+	                    break;
+	                case 2:
+	                    if (_terrain.Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
+	                        this.energy = 0;
+	                        steps = steps || 1;
+	                        this.y -= steps * 10;
+	                        return true;
+	                    }
+	                    break;
+	                case 3:
+	                    if (_terrain.Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
+	                        this.energy = 0;
+	                        steps = steps || 1;
+	                        this.x -= steps * 10;
+	                        return true;
+	                    }
+	                    break;
 	            }
 	        };
 
@@ -544,34 +580,6 @@
 
 /***/ },
 /* 6 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	/**
-	 * Created by Nathan on 1/31/2016.
-	 */
-
-	var CANVAS_HEIGHT = 500;
-	var CANVAS_WIDTH = 900;
-	var queue = [];
-	var TURN = 0;
-	var TIME = 0;
-	var LAST_TIME = 0;
-	//var cursorPos = {};
-	//var entities = [];
-
-	exports.CANVAS_HEIGHT = CANVAS_HEIGHT;
-	exports.CANVAS_WIDTH = CANVAS_WIDTH;
-	exports.TURN = TURN;
-	exports.TIME = TIME;
-	exports.LAST_TIME = LAST_TIME;
-
-/***/ },
-/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -585,7 +593,7 @@
 	});
 	exports.draw = undefined;
 
-	var _constants = __webpack_require__(6);
+	var _constants = __webpack_require__(7);
 
 	var constants = _interopRequireWildcard(_constants);
 
@@ -836,6 +844,34 @@
 	exports.draw = draw;
 
 /***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * Created by Nathan on 1/31/2016.
+	 */
+
+	var CANVAS_HEIGHT = 500;
+	var CANVAS_WIDTH = 900;
+	var queue = [];
+	var TURN = 0;
+	var TIME = 0;
+	var LAST_TIME = 0;
+	//var cursorPos = {};
+	//var entities = [];
+
+	exports.CANVAS_HEIGHT = CANVAS_HEIGHT;
+	exports.CANVAS_WIDTH = CANVAS_WIDTH;
+	exports.TURN = TURN;
+	exports.TIME = TIME;
+	exports.LAST_TIME = LAST_TIME;
+
+/***/ },
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -846,7 +882,7 @@
 	});
 	exports.MAINBAR = exports.ctx = exports.canvas = undefined;
 
-	var _constants = __webpack_require__(6);
+	var _constants = __webpack_require__(7);
 
 	var constants = _interopRequireWildcard(_constants);
 
@@ -1210,24 +1246,20 @@
 	var _entity = __webpack_require__(5);
 
 	function addRandomMonster() {
-	    function randoUpdate(self) {
-	        self.wait++;
+	    function update(self) {
+	        self.energy += 34;
 	        var lastDir = self.dir;
-	        if (self.wait >= self.rest) {
+	        if (self.canAct()) {
 	            var move;
 	            if (Math.random() > 0.35) {
 	                move = lastDir;
 	            } else {
 	                move = Math.floor(Math.random() * 4);
 	            }
-	            if (move === 0) self.moveDown();
-	            if (move === 1) self.moveRight();
-	            if (move === 2) self.moveUp();
-	            if (move === 3) self.moveLeft();
-	            self.wait = 0;
+	            self.move(move);
 	        }
 	    }
-	    new _entity.Entity('monster', 100, 100, randoUpdate, 15, 1, 0);
+	    new _entity.Entity('monster', 100, 100, update, 1, 0);
 	}
 
 	addRandomMonster();
@@ -1261,8 +1293,8 @@
 	    _createClass(Action, null, [{
 	        key: 'shoot',
 	        value: function shoot(owner, dir) {
-	            if (owner.attackWait < owner.attackRest) return;
-	            owner.attackWait = 0;
+	            if (!owner.canAct()) return false;
+	            owner.energy = 0;
 	            var update = function update(self) {
 	                if (self.isOffScreen()) {
 	                    self.destroy();
@@ -1289,12 +1321,13 @@
 	                }
 	            };
 
-	            new _entity.Entity('shot', owner.x, owner.y, update, null, 1, dir);
+	            new _entity.Entity('shot', owner.x, owner.y, update, 1, dir);
 	        }
 	    }, {
 	        key: 'shootArrow',
 	        value: function shootArrow(owner, dir) {
-	            owner.wait = 0;
+	            if (!owner.canAct()) return false;
+	            owner.energy = 0;
 	            var startx = owner.x;
 	            var starty = owner.y;
 	            function update(self) {
@@ -1315,7 +1348,7 @@
 	                }
 	            }
 
-	            new _entity.Entity('arrow', owner.x, owner.y, update, null, 1, dir);
+	            new _entity.Entity('arrow', owner.x, owner.y, update, 1, dir);
 	        }
 	    }]);
 
@@ -1474,10 +1507,11 @@
 	var _action = __webpack_require__(11);
 
 	function playerUpdate(self) {
-	    self.wait++;
-	    self.attackWait++;
+	    //self.wait++;
+	    //self.attackWait++;
+	    self.energy += 50;
 	}
-	var player = new _entity.Entity('player', 10, 10, playerUpdate, 10, 1, 0);
+	var player = new _entity.Entity('player', 10, 10, playerUpdate, 1, 0);
 
 	function getPlayer() {
 	    return _entity.Entity.findByUUID(player.uuid);

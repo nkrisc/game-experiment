@@ -68,6 +68,7 @@ function update() {
         }
     }
 
+    //TODO: process entities by energy level (>= 100) then when player is reached wait for input
     updatePlayerBehavior();
     updateEntities();
     prune();

@@ -3,8 +3,8 @@ import { Entity } from './entity.js';
 
 class Action {
     static shoot(owner, dir) {
-        if (owner.attackWait < owner.attackRest) return;
-        owner.attackWait = 0;
+        if (!owner.canAct()) return false;
+        owner.energy = 0;
         var update = function(self) {
             if (self.isOffScreen()) {
                 self.destroy();
@@ -31,11 +31,12 @@ class Action {
             }
         };
 
-        new Entity('shot', owner.x, owner.y, update, null, 1, dir);
+        new Entity('shot', owner.x, owner.y, update, 1, dir);
     };
 
     static shootArrow(owner, dir) {
-        owner.wait = 0;
+        if (!owner.canAct()) return false;
+        owner.energy = 0;
         var startx = owner.x;
         var starty = owner.y;
         function update(self) {
@@ -56,7 +57,7 @@ class Action {
             }
         }
 
-        new Entity('arrow', owner.x, owner.y, update, null, 1, dir);
+        new Entity('arrow', owner.x, owner.y, update, 1, dir);
     }
 }
 
