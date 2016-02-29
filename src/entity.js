@@ -9,95 +9,104 @@ import { Tile } from './terrain.js';
 const ENTITIES = new ObjectList();
 
 class Entity extends GameObject {
-    constructor(type, x, y, update, state, dir) {
-        super(x, y, type, update);
+    constructor(type, x, y, updateFunc, state, dir, replenish) {
+        super(x, y, type);
         this.state = state || 1;
         this.dir = dir || 0;
         this.energy = 0;
+        this.replenish = replenish || 20;
+        this.currentAction = null;
         this.uuid = GameObject.generateUUID();
+
+        this.setAction = function(action) {
+            this.currentAction = action;
+        };
+
+        this.nextAction = function() {
+            if (this.currentAction) {
+                this.currentAction();
+                this.currentAction = null;
+                this.energy = 0;
+                return true;
+            }
+            return false;
+        };
+
+        this.update = function(self) {
+            updateFunc(self);
+            if (this.canAct()) {
+                this.nextAction();
+            } else {
+                this.recharge();
+            }
+        };
 
         this.canAct = function() {
             return this.energy >= 100;
         };
 
-        this.moveDown = function(steps) {
-            this.dir = 0;
-            if (Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
-                this.energy = 0;
-                steps = steps || 1;
-                this.y += steps * 10;
-                return true;
-            }
+        this.recharge = function() {
+            this.energy += replenish;
         };
 
-        this.moveRight = function(steps) {
-            this.dir = 1;
-            if (Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
-                this.energy = 0;
-                steps = steps || 1;
-                this.x += steps * 10;
-                return true;
-            }
-        };
-
-        this.moveUp = function(steps) {
-            this.dir = 2;
-            if (Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
-                this.energy = 0;
-                steps = steps || 1;
-                this.y -= steps * 10;
-                return true;
-            }
-        };
-
-        this.moveLeft = function(steps) {
-            this.dir = 3;
-            if (Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
-                this.energy = 0;
-                steps = steps || 1;
-                this.x -= steps * 10;
-                return true;
-            }
-        };
-
-        this.move = function(dir, steps) {
-            this.dir = dir;
-            this.steps = steps || 1;
+        this.canMoveDir = function(dir) {
             switch (dir) {
                 case 0:
-                    if (Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
-                        this.energy = 0;
-                        steps = steps || 1;
-                        this.y += steps * 10;
+                    return Tile.isLegalMove(this.x, this.y + 10) && this.canAct();
+                case 1:
+                    return Tile.isLegalMove(this.x + 10, this.y) && this.canAct();
+                case 2:
+                    return Tile.isLegalMove(this.x, this.y - 10) && this.canAct();
+                case 3:
+                    return Tile.isLegalMove(this.x - 10, this.y) && this.canAct();
+            }
+        };
+
+        this.moveDown = function() {
+            this.move(0);
+        };
+
+        this.moveRight = function() {
+            this.move(1);
+        };
+
+        this.moveUp = function() {
+            this.move(2);
+        };
+
+        this.moveLeft = function() {
+            this.move(3);
+        };
+
+        this.move = function(dir) {
+            this.dir = dir;
+            switch (dir) {
+                case 0:
+                    if (this.canMoveDir(0)) {
+                        this.y += 10;
                         return true;
                     }
                     break;
                 case 1:
-                    if (Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
-                        this.energy = 0;
-                        steps = steps || 1;
-                        this.x += steps * 10;
+                    if (this.canMoveDir(1)) {
+                        this.x += 10;
                         return true;
                     }
                     break;
                 case 2:
-                    if (Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
-                        this.energy = 0;
-                        steps = steps || 1;
-                        this.y -= steps * 10;
+                    if (this.canMoveDir(2)) {
+                        this.y -= 10;
                         return true;
                     }
                     break;
                 case 3:
-                    if (Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
-                        this.energy = 0;
-                        steps = steps || 1;
-                        this.x -= steps * 10;
+                    if (this.canMoveDir(3)) {
+                        this.x -= 10;
                         return true;
                     }
                     break;
             }
-        }
+        };
 
         this.destroy = function() {
             ENTITIES.remove(this.uuid);

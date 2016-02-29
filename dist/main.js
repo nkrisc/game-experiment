@@ -54,7 +54,7 @@
 
 	var _draw = __webpack_require__(6);
 
-	var _update = __webpack_require__(12);
+	var _update = __webpack_require__(13);
 
 	var _constants = __webpack_require__(7);
 
@@ -228,13 +228,12 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var GameObject = function () {
-	    function GameObject(x, y, type, update) {
+	    function GameObject(x, y, type) {
 	        _classCallCheck(this, GameObject);
 
 	        this.type = type;
 	        this.x = x;
 	        this.y = y;
-	        this.update = update;
 	        this.uuid = GameObject.generateUUID();
 	        this.isOffScreen = function () {
 	            return !!(this.x > _scene.SCENE.width || this.x < 0 || this.y > _scene.SCENE.height || this.y < 0);
@@ -452,95 +451,104 @@
 	var Entity = function (_GameObject) {
 	    _inherits(Entity, _GameObject);
 
-	    function Entity(type, x, y, update, state, dir) {
+	    function Entity(type, x, y, updateFunc, state, dir, replenish) {
 	        var _ret;
 
 	        _classCallCheck(this, Entity);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Entity).call(this, x, y, type, update));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Entity).call(this, x, y, type));
 
 	        _this.state = state || 1;
 	        _this.dir = dir || 0;
 	        _this.energy = 0;
+	        _this.replenish = replenish || 20;
+	        _this.currentAction = null;
 	        _this.uuid = _gameobject.GameObject.generateUUID();
+
+	        _this.setAction = function (action) {
+	            this.currentAction = action;
+	        };
+
+	        _this.nextAction = function () {
+	            if (this.currentAction) {
+	                this.currentAction();
+	                this.currentAction = null;
+	                this.energy = 0;
+	                return true;
+	            }
+	            return false;
+	        };
+
+	        _this.update = function (self) {
+	            updateFunc(self);
+	            if (this.canAct()) {
+	                this.nextAction();
+	            } else {
+	                this.recharge();
+	            }
+	        };
 
 	        _this.canAct = function () {
 	            return this.energy >= 100;
 	        };
 
-	        _this.moveDown = function (steps) {
-	            this.dir = 0;
-	            if (_terrain.Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
-	                this.energy = 0;
-	                steps = steps || 1;
-	                this.y += steps * 10;
-	                return true;
-	            }
+	        _this.recharge = function () {
+	            this.energy += replenish;
 	        };
 
-	        _this.moveRight = function (steps) {
-	            this.dir = 1;
-	            if (_terrain.Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
-	                this.energy = 0;
-	                steps = steps || 1;
-	                this.x += steps * 10;
-	                return true;
-	            }
-	        };
-
-	        _this.moveUp = function (steps) {
-	            this.dir = 2;
-	            if (_terrain.Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
-	                this.energy = 0;
-	                steps = steps || 1;
-	                this.y -= steps * 10;
-	                return true;
-	            }
-	        };
-
-	        _this.moveLeft = function (steps) {
-	            this.dir = 3;
-	            if (_terrain.Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
-	                this.energy = 0;
-	                steps = steps || 1;
-	                this.x -= steps * 10;
-	                return true;
-	            }
-	        };
-
-	        _this.move = function (dir, steps) {
-	            this.dir = dir;
-	            this.steps = steps || 1;
+	        _this.canMoveDir = function (dir) {
 	            switch (dir) {
 	                case 0:
-	                    if (_terrain.Tile.isLegalMove(this.x, this.y + 10) && this.canAct()) {
-	                        this.energy = 0;
-	                        steps = steps || 1;
-	                        this.y += steps * 10;
+	                    return _terrain.Tile.isLegalMove(this.x, this.y + 10) && this.canAct();
+	                case 1:
+	                    return _terrain.Tile.isLegalMove(this.x + 10, this.y) && this.canAct();
+	                case 2:
+	                    return _terrain.Tile.isLegalMove(this.x, this.y - 10) && this.canAct();
+	                case 3:
+	                    return _terrain.Tile.isLegalMove(this.x - 10, this.y) && this.canAct();
+	            }
+	        };
+
+	        _this.moveDown = function () {
+	            this.move(0);
+	        };
+
+	        _this.moveRight = function () {
+	            this.move(1);
+	        };
+
+	        _this.moveUp = function () {
+	            this.move(2);
+	        };
+
+	        _this.moveLeft = function () {
+	            this.move(3);
+	        };
+
+	        _this.move = function (dir) {
+	            this.dir = dir;
+	            switch (dir) {
+	                case 0:
+	                    if (this.canMoveDir(0)) {
+	                        this.y += 10;
 	                        return true;
 	                    }
 	                    break;
 	                case 1:
-	                    if (_terrain.Tile.isLegalMove(this.x + 10, this.y) && this.canAct()) {
-	                        this.energy = 0;
-	                        steps = steps || 1;
-	                        this.x += steps * 10;
+	                    if (this.canMoveDir(1)) {
+	                        this.x += 10;
 	                        return true;
 	                    }
 	                    break;
 	                case 2:
-	                    if (_terrain.Tile.isLegalMove(this.x, this.y - 10) && this.canAct()) {
-	                        this.energy = 0;
-	                        steps = steps || 1;
-	                        this.y -= steps * 10;
+	                    if (this.canMoveDir(2)) {
+	                        this.y -= 10;
 	                        return true;
 	                    }
 	                    break;
 	                case 3:
-	                    if (_terrain.Tile.isLegalMove(this.x - 10, this.y) && this.canAct()) {
-	                        this.energy = 0;
-	                        steps = steps || 1;
-	                        this.x -= steps * 10;
+	                    if (this.canMoveDir(3)) {
+	                        this.x -= 10;
 	                        return true;
 	                    }
 	                    break;
@@ -607,6 +615,8 @@
 
 	var _scene = __webpack_require__(3);
 
+	var _player = __webpack_require__(12);
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	//IMAGES
@@ -667,6 +677,21 @@
 	function draw() {
 	    _UI.ctx.fillStyle = '#000000';
 	    _UI.ctx.fillRect(0, 0, _scene.SCENE.width, _scene.SCENE.height);
+
+	    //adjust offset based on player position
+	    var player = (0, _player.getPlayer)();
+	    if (player.y >= _scene.SCENE.VIEW.bottom() - 70 && _scene.SCENE.bottom() !== _scene.SCENE.VIEW.bottom()) {
+	        (0, _scene.offsetY)(-10);
+	    }
+	    if (player.x >= _scene.SCENE.VIEW.right() - 50 && _scene.SCENE.right() !== _scene.SCENE.VIEW.right()) {
+	        (0, _scene.offsetX)(-10);
+	    }
+	    if (player.y <= _scene.SCENE.VIEW.top() + 50 && _scene.SCENE.top() !== _scene.SCENE.VIEW.top()) {
+	        (0, _scene.offsetY)(10);
+	    }
+	    if (player.x <= _scene.SCENE.VIEW.left() + 50 && _scene.SCENE.left() !== _scene.SCENE.VIEW.left()) {
+	        (0, _scene.offsetX)(10);
+	    }
 
 	    //draw terrain details first
 	    function drawDecor() {
@@ -972,7 +997,8 @@
 	    shift: false,
 	    alt: false,
 	    j: false,
-	    k: false
+	    k: false,
+	    arrow: null
 	};
 
 	var CURSOR_STATE = {
@@ -1066,7 +1092,9 @@
 	    e.preventDefault();
 
 	    if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+	        KEY_STATE.arrows.clear();
 	        KEY_STATE.arrows.add(e.keyCode);
+	        KEY_STATE.arrow = e.keyCode;
 	    }
 
 	    switch (e.keyCode) {
@@ -1094,7 +1122,7 @@
 	function inputKeyUp(e) {
 	    e.preventDefault();
 
-	    KEY_STATE.arrows.delete(e.keyCode);
+	    //KEY_STATE.arrows.delete(e.keyCode);
 
 	    switch (e.keyCode) {
 	        case 74:
@@ -1228,6 +1256,7 @@
 	});
 
 	window.C = CURSOR_STATE;
+	window.K = KEY_STATE;
 	exports.getCursorPos = getCursorPos;
 	exports.KEY_STATE = KEY_STATE;
 	exports.CURSOR_STATE = CURSOR_STATE;
@@ -1247,19 +1276,29 @@
 
 	function addRandomMonster() {
 	    function update(self) {
-	        self.energy += 34;
 	        var lastDir = self.dir;
-	        if (self.canAct()) {
-	            var move;
-	            if (Math.random() > 0.35) {
-	                move = lastDir;
-	            } else {
-	                move = Math.floor(Math.random() * 4);
-	            }
-	            self.move(move);
+	        var move;
+	        if (Math.random() > 0.35) {
+	            move = lastDir;
+	        } else {
+	            move = Math.floor(Math.random() * 4);
+	        }
+	        switch (move) {
+	            case 0:
+	                self.setAction(self.moveDown);
+	                break;
+	            case 1:
+	                self.setAction(self.moveRight);
+	                break;
+	            case 2:
+	                self.setAction(self.moveUp);
+	                break;
+	            case 3:
+	                self.setAction(self.moveLeft);
+	                break;
 	        }
 	    }
-	    new _entity.Entity('monster', 100, 100, update, 1, 0);
+	    new _entity.Entity('monster', 100, 100, update, 1, 0, 34);
 	}
 
 	addRandomMonster();
@@ -1366,11 +1405,38 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.QUEUE = exports.update = undefined;
+	exports.getPlayer = undefined;
 
 	var _entity = __webpack_require__(5);
 
-	var _player = __webpack_require__(13);
+	var _action = __webpack_require__(11);
+
+	function playerUpdate(self) {
+	    //self.wait++;
+	    //self.attackWait++;
+	}
+	var player = new _entity.Entity('player', 10, 10, playerUpdate, 1, 0, 100);
+
+	function getPlayer() {
+	    return _entity.Entity.findByUUID(player.uuid);
+	}
+
+	exports.getPlayer = getPlayer;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.update = undefined;
+
+	var _entity = __webpack_require__(5);
+
+	var _player = __webpack_require__(12);
 
 	var _input = __webpack_require__(9);
 
@@ -1378,20 +1444,10 @@
 
 	var _scene = __webpack_require__(3);
 
-	var QUEUE = [];
+	var ents = _entity.Entity.all();
+	var currentEnt = ents.next();
 
 	function update() {
-	    //1 sec updates
-	    /*
-	    time = Date.now() / 1000;
-	    if(time - lastTime > 1 ) {
-	        var fps = (turn / (time - lastTime)).toFixed(0);
-	        UI.fps(fps); //implement
-	        lastTime = time;
-	        turn = 0;
-	    }
-	    */
-	    //turn++;
 
 	    function prune() {
 	        var entities = _entity.Entity.all();
@@ -1424,100 +1480,63 @@
 	        }
 	    }
 
-	    function updateEntities() {
-	        var entities = _entity.Entity.all();
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	            for (var _iterator2 = entities[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var i = _step2.value;
-
-	                var current = i[1];
-	                current.update(current);
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                    _iterator2.return();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
+	    /*function updateEntities() {
+	        var entities = Entity.all();
+	        for (var i of entities) {
+	            let current = i[1];
+	            if (current.type === 'player' && current.canAct() && !current.nextAction) return;
+	            current.update(current);
 	        }
+	    }*/
+
+	    function updateEntities() {
+	        if (currentEnt.done) {
+	            ents = _entity.Entity.all();
+	            currentEnt = ents.next();
+	        }
+	        var current = currentEnt.value[1];
+	        if (current.type === 'player' && !current.currentAction) {
+	            return;
+	        }
+	        current.update(current);
+	        currentEnt = ents.next();
 	    }
 
 	    function updatePlayerBehavior() {
 	        var player = (0, _player.getPlayer)();
-	        switch (Array.from(_input.KEY_STATE.arrows.values()).pop()) {
+
+	        switch (_input.KEY_STATE.arrow) {
 	            case 40:
-	                //If play can move (it will) and player is within 50 of view bottom and view isn't at scene edge
-	                if (player.moveDown() && player.y >= _scene.SCENE.VIEW.bottom() - 70 && _scene.SCENE.bottom() !== _scene.SCENE.VIEW.bottom()) {
-	                    (0, _scene.offsetY)(-10);
-	                }
+	                player.setAction(player.moveDown);
+	                _input.KEY_STATE.arrow = null;
 	                break;
 	            case 39:
-	                if (player.moveRight() && player.x >= _scene.SCENE.VIEW.right() - 50 && _scene.SCENE.right() !== _scene.SCENE.VIEW.right()) {
-	                    (0, _scene.offsetX)(-10);
-	                }
+	                player.setAction(player.moveRight);
+	                _input.KEY_STATE.arrow = null;
 	                break;
 	            case 38:
-	                if (player.moveUp() && player.y <= _scene.SCENE.VIEW.top() + 50 && _scene.SCENE.top() !== _scene.SCENE.VIEW.top()) {
-	                    (0, _scene.offsetY)(10);
-	                }
+	                player.setAction(player.moveUp);
+	                _input.KEY_STATE.arrow = null;
 	                break;
 	            case 37:
-	                if (player.moveLeft() && player.x <= _scene.SCENE.VIEW.left() + 50 && _scene.SCENE.left() !== _scene.SCENE.VIEW.left()) {
-	                    (0, _scene.offsetX)(10);
-	                }
+	                player.setAction(player.moveLeft);
+	                _input.KEY_STATE.arrow = null;
 	                break;
 	        }
 	        if (_input.KEY_STATE.j) {
 	            _action.Action.shoot(player, player.dir);
 	        }
+
+	        return true;
 	    }
 
+	    //TODO: process entities by energy level (>= 100) then when player is reached wait for input
 	    updatePlayerBehavior();
 	    updateEntities();
 	    prune();
 	}
-
+	window.p = (0, _player.getPlayer)();
 	exports.update = update;
-	exports.QUEUE = QUEUE;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.getPlayer = undefined;
-
-	var _entity = __webpack_require__(5);
-
-	var _action = __webpack_require__(11);
-
-	function playerUpdate(self) {
-	    //self.wait++;
-	    //self.attackWait++;
-	    self.energy += 50;
-	}
-	var player = new _entity.Entity('player', 10, 10, playerUpdate, 1, 0);
-
-	function getPlayer() {
-	    return _entity.Entity.findByUUID(player.uuid);
-	}
-
-	exports.getPlayer = getPlayer;
 
 /***/ }
 /******/ ]);

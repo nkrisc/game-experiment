@@ -12,7 +12,8 @@ const KEY_STATE = {
     shift: false,
     alt: false,
     j: false,
-    k: false
+    k: false,
+    arrow: null
 };
 
 const CURSOR_STATE = {
@@ -106,7 +107,9 @@ function inputKeyDown(e) {
     e.preventDefault();
 
     if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+        KEY_STATE.arrows.clear();
         KEY_STATE.arrows.add(e.keyCode);
+        KEY_STATE.arrow = e.keyCode;
     }
 
     switch (e.keyCode) {
@@ -134,7 +137,7 @@ function inputKeyDown(e) {
 function inputKeyUp(e) {
     e.preventDefault();
 
-    KEY_STATE.arrows.delete(e.keyCode);
+    //KEY_STATE.arrows.delete(e.keyCode);
 
     switch (e.keyCode) {
         case 74:
@@ -270,4 +273,5 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 window.C = CURSOR_STATE;
+window.K = KEY_STATE;
 export { getCursorPos, KEY_STATE, CURSOR_STATE }

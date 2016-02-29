@@ -4,20 +4,10 @@ import { KEY_STATE, getCursorPos } from './input.js';
 import { Action } from './action.js';
 import { SCENE, offsetX, offsetY } from './scene.js';
 
-const QUEUE = [];
+var ents = Entity.all();
+var currentEnt = ents.next();
 
 function update() {
-    //1 sec updates
-    /*
-    time = Date.now() / 1000;
-    if(time - lastTime > 1 ) {
-        var fps = (turn / (time - lastTime)).toFixed(0);
-        UI.fps(fps); //implement
-        lastTime = time;
-        turn = 0;
-    }
-    */
-    //turn++;
 
     function prune() {
         var entities = Entity.all();
@@ -30,42 +20,54 @@ function update() {
         }
     }
 
-    function updateEntities() {
+    /*function updateEntities() {
         var entities = Entity.all();
         for (var i of entities) {
             let current = i[1];
+            if (current.type === 'player' && current.canAct() && !current.nextAction) return;
             current.update(current);
         }
+    }*/
+
+    function updateEntities() {
+        if (currentEnt.done) {
+            ents = Entity.all();
+            currentEnt = ents.next();
+        }
+        var current = currentEnt.value[1];
+        if (current.type === 'player' && !current.currentAction) {
+            return;
+        }
+        current.update(current);
+        currentEnt = ents.next();
     }
 
     function updatePlayerBehavior() {
         var player = getPlayer();
-        switch (Array.from(KEY_STATE.arrows.values()).pop()) {
+
+        switch (KEY_STATE.arrow) {
             case 40:
-                //If play can move (it will) and player is within 50 of view bottom and view isn't at scene edge
-                if (player.moveDown() && player.y >= SCENE.VIEW.bottom() - 70 && SCENE.bottom() !== SCENE.VIEW.bottom()) {
-                    offsetY(-10);
-                }
+                player.setAction(player.moveDown);
+                KEY_STATE.arrow = null;
                 break;
             case 39:
-                if (player.moveRight() && player.x >= SCENE.VIEW.right() - 50 && SCENE.right() !== SCENE.VIEW.right()) {
-                    offsetX(-10);
-                }
+                player.setAction(player.moveRight);
+                KEY_STATE.arrow = null;
                 break;
             case 38:
-                if (player.moveUp() && player.y <= SCENE.VIEW.top() + 50 && SCENE.top() !== SCENE.VIEW.top()) {
-                    offsetY(10);
-                }
+                player.setAction(player.moveUp);
+                KEY_STATE.arrow = null;
                 break;
             case 37:
-                if (player.moveLeft() && player.x <= SCENE.VIEW.left() + 50 && SCENE.left() !== SCENE.VIEW.left()) {
-                    offsetX(10);
-                }
+                player.setAction(player.moveLeft);
+                KEY_STATE.arrow = null;
                 break;
         }
         if (KEY_STATE.j) {
             Action.shoot(player, player.dir);
         }
+
+        return true;
     }
 
     //TODO: process entities by energy level (>= 100) then when player is reached wait for input
@@ -73,5 +75,5 @@ function update() {
     updateEntities();
     prune();
 }
-
-export { update, QUEUE }
+window.p = getPlayer();
+export { update }

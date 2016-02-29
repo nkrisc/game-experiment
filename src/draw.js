@@ -7,6 +7,7 @@ import { Entity } from './entity.js';
 import { MAINBAR, ctx } from './UI.js';
 import { CURSOR_STATE } from './input.js';
 import { offsetX, offsetY, SCENE } from './scene.js';
+import { getPlayer } from './player.js';
 
 //IMAGES
 const root = 'assets/';
@@ -66,6 +67,21 @@ T[4].src = root + 'terrain-detail-5.png';
 function draw() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, SCENE.width, SCENE.height);
+
+    //adjust offset based on player position
+    var player = getPlayer();
+    if (player.y >= SCENE.VIEW.bottom() - 70 && SCENE.bottom() !== SCENE.VIEW.bottom()) {
+        offsetY(-10);
+    }
+    if (player.x >= SCENE.VIEW.right() - 50 && SCENE.right() !== SCENE.VIEW.right()) {
+        offsetX(-10);
+    }
+    if (player.y <= SCENE.VIEW.top() + 50 && SCENE.top() !== SCENE.VIEW.top()) {
+        offsetY(10);
+    }
+    if (player.x <= SCENE.VIEW.left() + 50 && SCENE.left() !== SCENE.VIEW.left()) {
+        offsetX(10);
+    }
 
     //draw terrain details first
     function drawDecor() {

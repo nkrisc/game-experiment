@@ -1,11 +1,10 @@
 import { SCENE } from './scene.js';
 
 class GameObject {
-    constructor(x, y, type, update) {
+    constructor(x, y, type) {
         this.type = type;
         this.x = x;
         this.y = y;
-        this.update = update;
         this.uuid = GameObject.generateUUID();
         this.isOffScreen = function() {
             return !!(this.x > SCENE.width || this.x < 0 || this.y > SCENE.height || this.y < 0);

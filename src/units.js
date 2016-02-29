@@ -2,19 +2,29 @@ import { Entity } from './entity.js';
 
 function addRandomMonster() {
     function update(self) {
-        self.energy += 34;
         var lastDir = self.dir;
-        if (self.canAct()) {
             var move;
             if (Math.random() > 0.35) {
                 move = lastDir;
             } else {
                 move = Math.floor(Math.random() * 4);
             }
-            self.move(move);
+            switch (move) {
+                case 0:
+                    self.setAction(self.moveDown);
+                    break;
+                case 1:
+                    self.setAction(self.moveRight);
+                    break;
+                case 2:
+                    self.setAction(self.moveUp);
+                    break;
+                case 3:
+                    self.setAction(self.moveLeft);
+                    break;
+            }
         }
-    }
-    new Entity('monster', 100, 100, update, 1, 0);
+    new Entity('monster', 100, 100, update, 1, 0, 34);
 }
 
 addRandomMonster();
